@@ -35,13 +35,15 @@ app.get('/refreshGameList', async (req, res) => {
   for (const game of steamLibrary) {
     const isTracked = dbGamesIds.includes(game.appid)
     if (!isTracked) {
+      console.log(`Adding ${game.name}`)
       const newGame = new Game({
         appid: game.appid,
         name: game.name,
         playtime_forever: game.playtime_forever,
         img_icon_url: game.img_icon_url,
         img_logo_url: game.img_logo_url,
-        completed: false
+        completed: false,
+        ignored: false
       })
 
       const savedGame = await newGame.save()

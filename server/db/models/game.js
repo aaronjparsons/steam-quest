@@ -6,7 +6,8 @@ const gameSchema = new mongoose.Schema({
   playtime_forever: Number,
   img_icon_url: String,
   img_logo_url: String,
-  completed: Boolean
+  completed: Boolean,
+  ignored: Boolean
 })
 
 module.exports = mongoose.model('Game', gameSchema, 'games')
