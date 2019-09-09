@@ -5,6 +5,7 @@
 <script>
 export default {
   created() {
+    // If the gameLibrary is empty, dispatch the action to set the gameLibrary
     if (!this.$store.getters.gameLibrary.length) {
       this.$store.dispatch('setGameLibrary')
     }
