@@ -10,7 +10,7 @@ export default new Vuex.Store({
   },
   getters: {
     gameLibrary: state => {
-      return state.gameLibrary
+      return state.gameLibrary.sort((a, b) => a.name.localeCompare(b.name))
     }
   },
   mutations: {
