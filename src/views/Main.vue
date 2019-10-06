@@ -14,14 +14,29 @@
           <span>Game Name</span>
         </div>
       </div>
-      <div class="right"></div>
+      <div class="right">
+        <div class="summary-header">
+          <h4>Current Round of Voting</h4>
+        </div>
+        <div class="summary-list">
+          <div class="vote-item" v-for="(game, index) in topVotedGames" :key="index">
+            <div class="vote-item-name" :class="firstItemClass(index)">{{ game.name }}</div>
+            <div class="vote-item-votes">Votes: {{ game.votes }}</div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="games-table">
+      <div class="games-table-header">
+        <b-input v-model="searchFilter" placeholder="Search for a game..."></b-input>
+      </div>
       <b-table
-        :data="gameLibrary"
+        :data="filteredGames"
         :striped="true"
         :hoverable="true"
         :loading="!hasGames"
+        :paginated="true"
+        per-page="20"
         default-sort="name"
       >
         <template slot-scope="props">
@@ -43,12 +58,56 @@
 
 <script>
 export default {
+  data() {
+    return {
+      searchFilter: '',
+      topVotedGames: [
+        {
+          name: 'Game 1',
+          votes: 10
+        },
+        {
+          name: 'Game 2',
+          votes: 8
+        },
+        {
+          name: 'Game 3',
+          votes: 6
+        },
+        {
+          name: 'Game 4',
+          votes: 3
+        },
+        {
+          name: 'Game 5',
+          votes: 1
+        }
+      ]
+    }
+  },
+
   computed: {
     gameLibrary() {
       return this.$store.getters.gameLibrary
     },
     hasGames() {
       return this.gameLibrary.length > 0
+    },
+    filteredGames() {
+      const trimmedSearch = this.searchFilter.trim().toLowerCase()
+      if (trimmedSearch.length > 0) {
+        return this.gameLibrary.filter(game => {
+          return game.name.toLowerCase().includes(trimmedSearch)
+        })
+      } else {
+        return this.gameLibrary
+      }
+    }
+  },
+
+  methods: {
+    firstItemClass(index) {
+      return index === 0 ? 'top-votes' : null
     }
   }
 }
@@ -104,15 +163,46 @@ $sq-accent: #45a29e;
   }
 
   .right {
+    color: $sq-text;
     background: $sq-background;
     width: 30%;
     height: 100%;
     margin: 10px 0 10px 5px;
     border-radius: 5px;
+    padding: 10px;
+
+    .summary-header {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #2d3b49;
+    }
+
+    .vote-item {
+      margin: 5px 0 5px 0;
+    }
+
+    .vote-item-name {
+      text-overflow: ellipsis;
+    }
+
+    .top-votes {
+      font-size: 18px;
+      color: $sq-primary;
+    }
+
+    .vote-item-votes {
+      text-align: right;
+    }
   }
 }
 
 .games-table {
   margin-top: 20px;
+  background: $sq-background;
+
+  .games-table-header {
+    padding: 20px;
+  }
 }
 </style>

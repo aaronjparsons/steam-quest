@@ -54,6 +54,13 @@ $table-striped-row-even-background-color: #1a212b;
 $table-row-hover-background-color: #263241;
 $table-striped-row-even-hover-background-color: #263241;
 
+// Input customization
+$input-color: $sq-text;
+$input-background-color: $sq-background-dark;
+$input-border-color: #27323f;
+$input-hover-border-color: #364353;
+$input-focus-border-color: $sq-primary;
+
 // Setup $colors to use as bulma classes (e.g. 'is-twitter')
 $colors: (
   'white': (
