@@ -44,7 +44,16 @@ async function onMessageHandler(target, context, msg, self) {
   // If the command is known, let's execute it
   if (command === '!top5') {
     // Top 5 command - Display current top 5 voted games
-    client.say(target, 'Top 5 votes command')
+    const games = await getTop5()
+    let string = ''
+    for (const index in games) {
+      const voteText = games[index].votes === 1 ? 'vote' : 'votes'
+      string += `${games[index].name}: ${games[index].votes} ${voteText}`
+      if (index != games.length - 1) {
+        string += ' -- '
+      }
+    }
+    client.say(target, string)
   } else if (command.includes('!vote')) {
     // Vote command - Submit a vote
     const appid = command.split('-')[1]
@@ -68,6 +77,12 @@ async function onMessageHandler(target, context, msg, self) {
       }
     }
   }
+}
+
+// Get the current top 5 list
+async function getTop5() {
+  const response = await API.get('/topGames')
+  return response.data.games
 }
 
 // Check if user has already voted
