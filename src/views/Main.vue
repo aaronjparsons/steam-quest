@@ -19,8 +19,11 @@
           <h4>Current Round of Voting</h4>
         </div>
         <div class="summary-list">
-          <div class="vote-item" v-for="(game, index) in topVotedGames" :key="index">
-            <div class="vote-item-name" :class="firstItemClass(index)">{{ game.name }}</div>
+          <div class="vote-item" v-for="(game, index) in topVotes" :key="index">
+            <div
+              class="vote-item-name"
+              :class="firstItemClass(index)"
+            >{{ index + 1 }}. {{ game.name }}</div>
             <div class="vote-item-votes">Votes: {{ game.votes }}</div>
           </div>
         </div>
@@ -47,9 +50,13 @@
             >{{ props.row.name }}</a>
           </b-table-column>
           <b-table-column field="vote" label="Last Name">
-            <b-button type="is-primary" outlined>Vote</b-button>
+            <b-button
+              type="is-primary"
+              outlined
+              @click="callSubmitVote(props.row.appid, props.row.name)"
+            >Vote</b-button>
           </b-table-column>
-          <b-table-column field="date" label="Votes" centered sortable>00</b-table-column>
+          <b-table-column field="votes" label="Votes" centered sortable>{{ props.row.votes }}</b-table-column>
         </template>
       </b-table>
     </div>
@@ -57,32 +64,12 @@
 </template>
 
 <script>
+import { submitVote } from '../helpers/api-helpers'
+
 export default {
   data() {
     return {
-      searchFilter: '',
-      topVotedGames: [
-        {
-          name: 'Game 1',
-          votes: 10
-        },
-        {
-          name: 'Game 2',
-          votes: 8
-        },
-        {
-          name: 'Game 3',
-          votes: 6
-        },
-        {
-          name: 'Game 4',
-          votes: 3
-        },
-        {
-          name: 'Game 5',
-          votes: 1
-        }
-      ]
+      searchFilter: ''
     }
   },
 
@@ -102,13 +89,24 @@ export default {
       } else {
         return this.gameLibrary
       }
+    },
+    topVotes() {
+      return this.$store.getters.topVotes
     }
   },
 
   methods: {
     firstItemClass(index) {
       return index === 0 ? 'top-votes' : null
+    },
+    async callSubmitVote(appid, name) {
+      const submit = await submitVote(appid, name)
+      if (submit.data.success) {
+        this.$store.dispatch('setGameLibrary')
+      }
     }
+
+    // TODO Add vote field to games, increment that. To reset we'll just wipe each games vote fields
   }
 }
 </script>

@@ -12,12 +12,6 @@ export default {
     Main
   },
 
-  data() {
-    return {
-      gameLibrary: []
-    }
-  },
-
   created() {
     // If the gameLibrary is empty, dispatch the action to set the gameLibrary
     if (!this.$store.getters.gameLibrary.length) {
@@ -53,6 +47,12 @@ $table-background-color: $sq-background;
 $table-striped-row-even-background-color: #1a212b;
 $table-row-hover-background-color: #263241;
 $table-striped-row-even-hover-background-color: #263241;
+
+// Pagination customization
+$pagination-color: $sq-text;
+$pagination-border-color: #2e3c4d;
+$pagination-hover-border-color: $sq-primary;
+$pagination-current-background-color: $sq-accent;
 
 // Input customization
 $input-color: $sq-text;

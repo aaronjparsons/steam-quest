@@ -26,6 +26,8 @@ mongoose
     console.error('Database connection error')
   })
 
+// GAME ROUTES //
+
 app.get('/refreshGameList', async (req, res) => {
   const gamesAdded = []
   const steamLibrary = await steam.library()
@@ -43,7 +45,8 @@ app.get('/refreshGameList', async (req, res) => {
         img_icon_url: game.img_icon_url,
         img_logo_url: game.img_logo_url,
         completed: false,
-        ignored: false
+        ignored: false,
+        votes: 0
       })
 
       const savedGame = await newGame.save()
@@ -85,6 +88,27 @@ app.post('/markGameCompleted', async (req, res) => {
     success: true,
     result
   })
+})
+
+// VOTE ROUTES //
+
+app.post('/submitVote', async (req, res) => {
+  const appid = req.body.appid
+  const query = Game.where({ appid }).findOne()
+  const game = await query.exec()
+  if (game) {
+    game.votes++
+    const saved = await game.save()
+    if (saved) {
+      res.send({
+        success: true
+      })
+    } else {
+      res.send({
+        success: false
+      })
+    }
+  }
 })
 
 const port = 3000

@@ -7,7 +7,8 @@ const gameSchema = new mongoose.Schema({
   img_icon_url: String,
   img_logo_url: String,
   completed: Boolean,
-  ignored: Boolean
+  ignored: Boolean,
+  votes: Number
 })
 
 module.exports = mongoose.model('Game', gameSchema, 'games')
