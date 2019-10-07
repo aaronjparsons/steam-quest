@@ -1,17 +1,11 @@
 <template>
   <div class="main">
-    <Main />
+    <router-view />
   </div>
 </template>
 
 <script>
-import Main from './views/Main'
-
 export default {
-  components: {
-    Main
-  },
-
   created() {
     // If the gameLibrary is empty, dispatch the action to set the gameLibrary
     if (!this.$store.getters.gameLibrary.length) {
@@ -55,6 +49,7 @@ $pagination-hover-border-color: $sq-primary;
 $pagination-current-background-color: $sq-accent;
 
 // Input customization
+$label-color: $sq-text;
 $input-color: $sq-text;
 $input-background-color: $sq-background-dark;
 $input-border-color: #27323f;
@@ -115,6 +110,7 @@ $link-visited: $sq-accent;
 @import '~buefy/src/scss/buefy';
 
 .main {
+  min-height: 100vh;
   background: $sq-background-dark;
 }
 </style>

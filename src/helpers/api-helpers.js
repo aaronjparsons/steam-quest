@@ -16,3 +16,11 @@ export const submitVote = async (appid, name) => {
   })
   return response
 }
+
+export const login = async (username, password) => {
+  const response = await API.post('/login', {
+    username,
+    password
+  })
+  return response
+}

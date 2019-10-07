@@ -2,8 +2,10 @@ const express = require('express')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const bcrypt = require('bcrypt')
 const steam = require('./steam-helper')
 const Game = require('./db/models/game')
+const User = require('./db/models/user')
 const UserVote = require('./db/models/userVote')
 
 const app = express()
@@ -173,6 +175,57 @@ app.get('/userVote/:name', async (req, res) => {
     res.send({
       success: true,
       voted: false
+    })
+  }
+})
+
+// AUTHENTICATION ROUTES //
+app.post('/register', (req, res) => {
+  const username = req.body.username
+  const password = req.body.password
+  bcrypt.hash(password, 10, async function(err, hash) {
+    // Store hash in your password DB.
+    const user = new User({
+      username,
+      password: hash
+    })
+
+    const userSaved = await user.save()
+
+    if (userSaved) {
+      res.send({
+        success: true
+      })
+    } else {
+      res.send({
+        success: false
+      })
+    }
+  })
+})
+
+app.post('/login', async (req, res) => {
+  const username = req.body.username
+  const password = req.body.password
+  const query = User.where({ username }).findOne()
+  const userData = await query.exec()
+
+  if (userData) {
+    const passwordMatch = await bcrypt.compare(password, userData.password)
+    if (passwordMatch) {
+      res.send({
+        success: true
+      })
+    } else {
+      res.send({
+        success: false,
+        message: 'Incorrect Username or Password'
+      })
+    }
+  } else {
+    res.send({
+      success: false,
+      message: 'Incorrect Username or Password'
     })
   }
 })

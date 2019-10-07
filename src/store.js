@@ -6,7 +6,8 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    gameLibrary: []
+    gameLibrary: [],
+    authenticated: false
   },
   getters: {
     gameLibrary: state => {
@@ -18,17 +19,26 @@ export default new Vuex.Store({
           return b.votes - a.votes
         })
         .slice(0, 5)
+    },
+    isAuthenticated: state => {
+      return state.authenticated
     }
   },
   mutations: {
     SET_GAME_LIBRARY(state, library) {
       state.gameLibrary = library
+    },
+    SET_AUTHENTICATED(state) {
+      state.authenticated = true
     }
   },
   actions: {
     async setGameLibrary({ commit }) {
       const library = await getGameLibrary()
       commit('SET_GAME_LIBRARY', library)
+    },
+    setAuthenticated({ commit }) {
+      commit('SET_AUTHENTICATED')
     }
   }
 })
