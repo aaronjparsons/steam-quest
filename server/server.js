@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const steam = require('./steam-helper')
 const Game = require('./db/models/game')
+const UserVote = require('./db/models/userVote')
 
 const app = express()
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -108,6 +109,49 @@ app.post('/submitVote', async (req, res) => {
         success: false
       })
     }
+  }
+})
+
+// USER VOTES ROUTE //
+app.post('/userVote', async (req, res) => {
+  const user = req.body.user
+  const appid = req.body.appid
+
+  const userVote = new UserVote({
+    appid,
+    user
+  })
+
+  const userVoteSaved = await userVote.save()
+
+  if (userVoteSaved) {
+    // Document exists, user already voted
+    res.send({
+      success: true
+    })
+  } else {
+    res.send({
+      success: false
+    })
+  }
+})
+
+app.post('/checkUser', async (req, res) => {
+  const user = req.body.user
+  const query = UserVote.where({ user }).findOne()
+  const game = await query.exec()
+
+  if (game) {
+    // Document exists, user already voted
+    res.send({
+      success: true,
+      voted: true
+    })
+  } else {
+    res.send({
+      success: true,
+      voted: false
+    })
   }
 })
 
