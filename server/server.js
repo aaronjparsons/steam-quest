@@ -102,13 +102,19 @@ app.post('/submitVote', async (req, res) => {
     const saved = await game.save()
     if (saved) {
       res.send({
-        success: true
+        success: true,
+        game: game.name
       })
     } else {
       res.send({
         success: false
       })
     }
+  } else {
+    res.send({
+      success: false,
+      message: 'Invalid appid'
+    })
   }
 })
 
@@ -136,8 +142,8 @@ app.post('/userVote', async (req, res) => {
   }
 })
 
-app.post('/checkUser', async (req, res) => {
-  const user = req.body.user
+app.get('/userVote/:name', async (req, res) => {
+  const user = req.params.name
   const query = UserVote.where({ user }).findOne()
   const game = await query.exec()
 

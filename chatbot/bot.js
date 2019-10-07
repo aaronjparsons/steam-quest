@@ -56,9 +56,11 @@ async function onMessageHandler(target, context, msg, self) {
         `@${displayName}, you have already voted in this round.`
       )
     } else {
-      const voteSubmitted = await submitVote(appid, user)
-      if (voteSubmitted) {
-        client.say(target, `${displayName} voted for ${appid}`)
+      const voted = await submitVote(appid, user)
+      if (voted.success) {
+        client.say(target, `${displayName} voted for ${voted}`)
+      } else {
+        client.say(target, `@${displayName} voting failed. ${voted.message}`)
       }
     }
   }
@@ -66,9 +68,7 @@ async function onMessageHandler(target, context, msg, self) {
 
 // Check if user has already voted
 async function checkUserVote(user) {
-  const response = await API.post('/checkUser', {
-    user
-  })
+  const response = await API.get(`/userVote/${user}`)
   return response.data.voted
 }
 
@@ -79,12 +79,24 @@ async function submitVote(appid, user) {
     appid
   })
   if (vote.data.success) {
+    const game = vote.data.game
     // Log vote for the user
     const voteLogged = await API.post('/userVote', {
       appid,
       user
     })
-    return voteLogged.data.success
+
+    if (voteLogged.data.success) {
+      return {
+        success: true,
+        game
+      }
+    }
+  } else {
+    return {
+      success: false,
+      message: vote.data.message
+    }
   }
 }
 
