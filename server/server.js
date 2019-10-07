@@ -77,6 +77,22 @@ app.get('/gameLibrary', async (req, res) => {
   })
 })
 
+app.get('/topGames', async (req, res) => {
+  const query = Game.where('votes')
+    .gte(1)
+    .find()
+  const dbGames = await query.exec()
+  const top = dbGames
+    .sort((a, b) => {
+      return b.votes - a.votes
+    })
+    .slice(0, 5)
+  res.send({
+    success: true,
+    games: top
+  })
+})
+
 app.post('/markGameCompleted', async (req, res) => {
   const appid = req.body.appid
   const query = Game.findOneAndUpdate(

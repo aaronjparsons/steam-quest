@@ -43,19 +43,23 @@ async function onMessageHandler(target, context, msg, self) {
 
   // If the command is known, let's execute it
   if (command === '!top5') {
+    // Top 5 command - Display current top 5 voted games
     client.say(target, 'Top 5 votes command')
   } else if (command.includes('!vote')) {
+    // Vote command - Submit a vote
     const appid = command.split('-')[1]
     const user = context.username
     const displayName = context['display-name']
     const voted = await checkUserVote(user)
 
     if (voted) {
+      // If the user has already submitted a vote this round, let them know
       client.say(
         target,
         `@${displayName}, you have already voted in this round.`
       )
     } else {
+      // If they have not submitted a vote, then submit the vote
       const voted = await submitVote(appid, user)
       if (voted.success) {
         client.say(target, `${displayName} voted for ${voted}`)
