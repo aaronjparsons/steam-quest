@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Main from './views/Main'
-import Vote from './views/Vote'
 
 Vue.use(VueRouter)
 
@@ -16,11 +15,6 @@ export default new VueRouter({
       path: '/',
       name: 'main',
       component: Main
-    },
-    {
-      path: '/vote',
-      name: 'vote',
-      component: Vote
     }
   ]
 })

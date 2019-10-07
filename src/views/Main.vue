@@ -49,13 +49,7 @@
               target="_blank"
             >{{ props.row.name }}</a>
           </b-table-column>
-          <b-table-column field="vote" label="Last Name">
-            <b-button
-              type="is-primary"
-              outlined
-              @click="callSubmitVote(props.row.appid, props.row.name)"
-            >Vote</b-button>
-          </b-table-column>
+          <b-table-column field="vote" label="Vote Command">!vote-{{ props.row.appid }}</b-table-column>
           <b-table-column field="votes" label="Votes" centered sortable>{{ props.row.votes }}</b-table-column>
         </template>
       </b-table>
@@ -64,8 +58,6 @@
 </template>
 
 <script>
-import { submitVote } from '../helpers/api-helpers'
-
 export default {
   data() {
     return {
@@ -98,15 +90,7 @@ export default {
   methods: {
     firstItemClass(index) {
       return index === 0 ? 'top-votes' : null
-    },
-    async callSubmitVote(appid, name) {
-      const submit = await submitVote(appid, name)
-      if (submit.data.success) {
-        this.$store.dispatch('setGameLibrary')
-      }
     }
-
-    // TODO Add vote field to games, increment that. To reset we'll just wipe each games vote fields
   }
 }
 </script>
