@@ -9,6 +9,11 @@ export const getGameLibrary = async () => {
   return library.data.games
 }
 
+export const getTopVotes = async () => {
+  const topGames = await API.get('/topGames')
+  return topGames.data.games
+}
+
 export const submitVote = async (appid, name) => {
   const response = await API.post('/submitVote', {
     appid,
