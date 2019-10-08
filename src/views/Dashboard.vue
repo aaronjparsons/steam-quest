@@ -12,16 +12,26 @@
             @select="option => currentGame = option"
           ></b-autocomplete>
           <div class="panel-footer">
-            <b-button type="is-primary" outlined @click="modalOpen = true">Change Game</b-button>
+            <b-button type="is-primary" outlined @click="confirmGameChange">Change Game</b-button>
           </div>
         </div>
       </div>
       <div class="column">
-        <div class="panel"></div>
+        <div class="panel">
+          <div class="panel-header">Clear Current Votes</div>
+          <p>Clear all current votes to start a new round of voting.</p>
+          <div class="panel-footer">
+            <b-button type="is-primary" outlined @click="confirmClearVotes">Clear Votes</b-button>
+          </div>
+        </div>
       </div>
     </div>
     <b-modal :active.sync="modalOpen" :can-cancel="['escape', 'outside']" has-modal-card>
-      <ConfirmationModal message="Confirm the thing..." />
+      <ConfirmationModal
+        :header="modalHeader"
+        :message="modalMessage"
+        :confirm-action="modalAction"
+      />
     </b-modal>
   </div>
 </template>
@@ -37,7 +47,10 @@ export default {
   data() {
     return {
       currentGame: 'Borderlands 2',
-      modalOpen: false
+      modalOpen: false,
+      modalHeader: '',
+      modalMessage: '',
+      modalAction: () => {}
     }
   },
 
@@ -57,15 +70,40 @@ export default {
     gameLibrary() {
       return this.$store.getters.gameLibrary
     },
+    gameNames() {
+      return this.gameLibrary.map(game => game.name)
+    },
     filteredGames() {
-      return this.gameLibrary.filter(game => {
+      return this.gameNames.filter(game => {
         return (
-          game.name.toLowerCase().indexOf(this.currentGame.toLowerCase()) >= 0
+          game
+            .toString()
+            .toLowerCase()
+            .indexOf(this.currentGame.toLowerCase()) >= 0
         )
       })
     },
     topVotes() {
       return this.$store.getters.topVotes
+    }
+  },
+
+  methods: {
+    confirmGameChange() {
+      this.modalHeader = 'Change Current Game?'
+      this.modalMessage = `Are you sure you want to change the current game to ${this.currentGame}?`
+      this.modalAction = this.submitChangeGame
+      this.modalOpen = true
+    },
+    submitChangeGame() {
+      console.log(this.currentGame)
+      this.modalOpen = false
+    },
+    confirmClearVotes() {
+      this.modalHeader = 'Clear All Current Votes?'
+      this.modalMessage = `Are you sure you want to clear all votes that have been cast?`
+      // this.modalAction = this.submitChangeGame
+      this.modalOpen = true
     }
   }
 }
@@ -84,7 +122,6 @@ $sq-accent: #45a29e;
 }
 
 .panel {
-  // height: 200px;
   background: $sq-background;
   border-radius: 5px;
   padding: 20px;
@@ -93,7 +130,7 @@ $sq-accent: #45a29e;
     font-size: 20px;
     color: $sq-text;
     border-bottom: 1px solid $sq-accent;
-    padding-left: 20px;
+    padding-left: 10px;
     margin-bottom: 20px;
   }
 
