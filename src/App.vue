@@ -48,6 +48,11 @@ $input-border-color: #27323f;
 $input-hover-border-color: #364353;
 $input-focus-border-color: $sq-primary;
 
+// Modal customization
+$modal-card-title-color: $sq-text;
+$modal-card-head-background-color: $sq-background;
+$modal-card-body-background-color: $sq-background;
+
 // Setup $colors to use as bulma classes (e.g. 'is-twitter')
 $colors: (
   'white': (
@@ -104,5 +109,6 @@ $link-visited: $sq-accent;
 .main {
   min-height: 100vh;
   background: $sq-background-dark;
+  color: $sq-text;
 }
 </style>

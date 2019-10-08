@@ -71,7 +71,7 @@ async function onMessageHandler(target, context, msg, self) {
       // If they have not submitted a vote, then submit the vote
       const voted = await submitVote(appid, user)
       if (voted.success) {
-        client.say(target, `${displayName} voted for ${voted}`)
+        client.say(target, `${displayName} voted for ${voted.game}`)
       } else {
         client.say(target, `@${displayName} voting failed. ${voted.message}`)
       }
