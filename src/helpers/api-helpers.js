@@ -29,3 +29,8 @@ export const login = async (username, password) => {
   })
   return response
 }
+
+export const clearVotes = async () => {
+  const response = await API.post('/clearVotes')
+  return response
+}

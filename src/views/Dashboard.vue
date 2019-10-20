@@ -37,6 +37,7 @@
 </template>
 
 <script>
+import { clearVotes } from '../helpers/api-helpers'
 import ConfirmationModal from '../components/ConfirmationModal'
 
 export default {
@@ -102,8 +103,24 @@ export default {
     confirmClearVotes() {
       this.modalHeader = 'Clear All Current Votes?'
       this.modalMessage = `Are you sure you want to clear all votes that have been cast?`
-      // this.modalAction = this.submitChangeGame
+      this.modalAction = this.submitClearVotes
       this.modalOpen = true
+    },
+    async submitClearVotes() {
+      const response = await clearVotes()
+      this.modalOpen = false
+      if (response.data.success) {
+        this.$buefy.toast.open({
+          message: 'Votes cleared successfully',
+          position: 'is-bottom'
+        })
+      } else {
+        this.$buefy.toast.open({
+          message: 'An error ocurred clearing the votes',
+          position: 'is-bottom',
+          type: 'is-danger'
+        })
+      }
     }
   }
 }

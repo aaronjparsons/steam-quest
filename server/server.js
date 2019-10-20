@@ -136,6 +136,18 @@ app.post('/submitVote', async (req, res) => {
   }
 })
 
+app.post('/clearVotes', async (req, res) => {
+  // Reset all game votes to 0
+  const gameVotes = await Game.updateMany({ votes: { $gt: 0 } }, { votes: 0 })
+  // Delete all user votes
+  const userVotes = await UserVote.deleteMany({})
+  if (gameVotes.ok && userVotes.ok) {
+    res.send({
+      success: true
+    })
+  }
+})
+
 // USER VOTES ROUTE //
 app.post('/userVote', async (req, res) => {
   const user = req.body.user
