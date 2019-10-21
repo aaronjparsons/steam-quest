@@ -34,3 +34,10 @@ export const clearVotes = async () => {
   const response = await API.post('/clearVotes')
   return response
 }
+
+export const ignoreGame = async appid => {
+  const response = await API.post('/markGameIgnored', {
+    appid
+  })
+  return response
+}

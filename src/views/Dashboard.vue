@@ -12,6 +12,7 @@
             @select="option => currentGame = option"
           ></b-autocomplete>
           <div class="panel-footer">
+            <b-button type="is-primary" outlined @click="confirmGameCompleted">Mark Complete</b-button>
             <b-button type="is-primary" outlined @click="confirmGameChange">Change Game</b-button>
           </div>
         </div>
@@ -24,6 +25,11 @@
             <b-button type="is-primary" outlined @click="confirmClearVotes">Clear Votes</b-button>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column">
+        <GameTable />
       </div>
     </div>
     <b-modal :active.sync="modalOpen" :can-cancel="['escape', 'outside']" has-modal-card>
@@ -39,10 +45,12 @@
 <script>
 import { clearVotes } from '../helpers/api-helpers'
 import ConfirmationModal from '../components/ConfirmationModal'
+import GameTable from '../components/GameTable'
 
 export default {
   components: {
-    ConfirmationModal
+    ConfirmationModal,
+    GameTable
   },
 
   data() {
@@ -93,10 +101,20 @@ export default {
     confirmGameChange() {
       this.modalHeader = 'Change Current Game?'
       this.modalMessage = `Are you sure you want to change the current game to ${this.currentGame}?`
-      this.modalAction = this.submitChangeGame
+      this.modalAction = this.submitGameChange
       this.modalOpen = true
     },
-    submitChangeGame() {
+    submitGameChange() {
+      console.log(this.currentGame)
+      this.modalOpen = false
+    },
+    confirmGameCompleted() {
+      this.modalHeader = 'Mark Current Game As Completed?'
+      this.modalMessage = `Are you sure you want to mark the current game as completed?`
+      this.modalAction = this.submitGameCompleted
+      this.modalOpen = true
+    },
+    submitGameCompleted() {
       console.log(this.currentGame)
       this.modalOpen = false
     },
@@ -155,6 +173,10 @@ $sq-accent: #45a29e;
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
+
+    button {
+      margin-left: 10px;
+    }
   }
 }
 </style>

@@ -29,40 +29,16 @@
         </div>
       </div>
     </div>
-    <div class="games-table">
-      <div class="games-table-header">
-        <b-input v-model="searchFilter" placeholder="Search for a game..."></b-input>
-      </div>
-      <b-table
-        :data="filteredGames"
-        :striped="true"
-        :hoverable="true"
-        :loading="!hasGames"
-        :paginated="true"
-        per-page="20"
-        default-sort="name"
-      >
-        <template slot-scope="props">
-          <b-table-column field="name" label="Game" sortable>
-            <a
-              :href="`https://store.steampowered.com/app/${props.row.appid}/`"
-              target="_blank"
-            >{{ props.row.name }}</a>
-          </b-table-column>
-          <b-table-column field="vote" label="Vote Command">!vote-{{ props.row.appid }}</b-table-column>
-          <b-table-column field="votes" label="Votes" centered sortable>{{ props.row.votes }}</b-table-column>
-        </template>
-      </b-table>
-    </div>
+    <GameTable />
   </div>
 </template>
 
 <script>
+import GameTable from '../components/GameTable'
+
 export default {
-  data() {
-    return {
-      searchFilter: ''
-    }
+  components: {
+    GameTable
   },
 
   created() {
@@ -78,22 +54,6 @@ export default {
   },
 
   computed: {
-    gameLibrary() {
-      return this.$store.getters.gameLibrary
-    },
-    hasGames() {
-      return this.gameLibrary.length > 0
-    },
-    filteredGames() {
-      const trimmedSearch = this.searchFilter.trim().toLowerCase()
-      if (trimmedSearch.length > 0) {
-        return this.gameLibrary.filter(game => {
-          return game.name.toLowerCase().includes(trimmedSearch)
-        })
-      } else {
-        return this.gameLibrary
-      }
-    },
     topVotes() {
       return this.$store.getters.topVotes
     }
@@ -188,15 +148,6 @@ $sq-accent: #45a29e;
     .vote-item-votes {
       text-align: right;
     }
-  }
-}
-
-.games-table {
-  margin-top: 20px;
-  background: $sq-background;
-
-  .games-table-header {
-    padding: 20px;
   }
 }
 </style>

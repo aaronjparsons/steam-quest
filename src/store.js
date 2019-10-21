@@ -11,8 +11,15 @@ export default new Vuex.Store({
     authenticated: true
   },
   getters: {
-    gameLibrary: state => {
-      return state.gameLibrary
+    gameLibrary: state => state.gameLibrary,
+    eligibleGames: state => {
+      return state.gameLibrary.filter(game => !game.ignored && !game.completed)
+    },
+    ignoredGames: state => {
+      return state.gameLibrary.filter(game => game.ignored)
+    },
+    completedGames: state => {
+      return state.gameLibrary.filter(game => game.completed)
     },
     topVotes: state => {
       return state.topVotes

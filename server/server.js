@@ -109,6 +109,20 @@ app.post('/markGameCompleted', async (req, res) => {
   })
 })
 
+app.post('/markGameIgnored', async (req, res) => {
+  const appid = req.body.appid
+  const query = Game.findOneAndUpdate(
+    { appid },
+    { ignored: true },
+    { new: true }
+  )
+  const result = await query.exec()
+  res.send({
+    success: true,
+    result
+  })
+})
+
 // VOTE ROUTES //
 
 app.post('/submitVote', async (req, res) => {

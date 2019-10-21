@@ -53,6 +53,16 @@ $modal-card-title-color: $sq-text;
 $modal-card-head-background-color: $sq-background;
 $modal-card-body-background-color: $sq-background;
 
+// Tabs customization
+$tabs-link-color: #546272;
+$tabs-link-hover-color: $sq-accent;
+$tabs-toggle-link-border-color: #546272;
+$tabs-toggle-link-hover-background-color: $sq-background;
+$tabs-toggle-link-hover-border-color: $sq-accent;
+$tabs-toggle-link-active-border-color: $sq-primary;
+$tabs-toggle-link-active-background-color: $sq-background;
+$tabs-toggle-link-active-color: $sq-primary;
+
 // Setup $colors to use as bulma classes (e.g. 'is-twitter')
 $colors: (
   'white': (
