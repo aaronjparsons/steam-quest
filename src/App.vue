@@ -1,28 +1,53 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="container">
+    <div class="dev-controls">
+      <b-radio v-model="currentPage" native-value="BroadcasterPage">BroadcasterPage</b-radio>
+      <b-radio v-model="currentPage" native-value="UserPage">UserPage</b-radio>
+    </div>
+    <div class="panel">
+      <component :is="pages[currentPage]" />
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import BroadcasterPage from './pages/BroadcasterPage'
+import UserPage from './pages/UserPage'
+
+const pages = {
+  BroadcasterPage,
+  UserPage
+}
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    ...pages
+  },
+
+  data() {
+    return {
+      pages,
+      currentPage: 'BroadcasterPage'
+    }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dev-controls {
+  padding: 20px;
+  height: 150px;
+}
+
+.panel {
+  width: 318px;
+  height: 496px;
 }
 </style>
