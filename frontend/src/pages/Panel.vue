@@ -1,14 +1,10 @@
 <template>
   <div>
     <p>Broadcaster</p>
-    <b-button @click="userCreate">Create Test</b-button>
-    <b-button @click="usersGet">Get Test</b-button>
   </div>
 </template>
 
 <script>
-import { createUser, getAllUsers } from '../firebase/db/User'
-
 const twitch = window.Twitch.ext
 
 export default {
@@ -30,18 +26,6 @@ export default {
     })
 
     twitch.rig.log(twitch.features.isBitsEnabled)
-  },
-
-  methods: {
-    userCreate() {
-      createUser({
-        name: 'Name',
-        age: 30
-      })
-    },
-    usersGet() {
-      getAllUsers()
-    }
   }
 }
 </script>
