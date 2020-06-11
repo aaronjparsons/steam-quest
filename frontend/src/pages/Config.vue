@@ -12,11 +12,12 @@
 </template>
 
 <script>
-import axios from 'axios'
+import createAxios from '../modules/axios'
 
 export default {
   data() {
     return {
+      axios: null,
       user: {},
       newUser: false,
       userRequestLoading: false,
@@ -29,6 +30,8 @@ export default {
       console.log('channelId: ', auth.channelId)
       console.log('token: ', auth.token)
       console.log('userId: ', auth.userId)
+
+      this.axios = createAxios(auth.token)
 
       await this.getUser(auth.userId)
 
@@ -50,7 +53,7 @@ export default {
     async getUser(id) {
       this.userRequestLoading = true
       try {
-        const response = await axios.get(`https://us-central1-steam-quest-ed9fd.cloudfunctions.net/api/users/${id}`)
+        const response = await this.axios.get(`/users/${id}`)
         this.user = response.data
       } catch (error) {
         console.error(error)
@@ -61,7 +64,7 @@ export default {
     async submitConfigForm() {
       this.configFormLoading = true
       try {
-        await axios.post('https://us-central1-steam-quest-ed9fd.cloudfunctions.net/api/users', this.user)
+        await this.axios.post('/users', this.user)
       } catch (error) {
         console.log(error)
       }

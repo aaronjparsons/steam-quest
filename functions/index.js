@@ -3,6 +3,7 @@ const admin = require('firebase-admin')
 const express = require('express')
 const cors = require('cors')
 const bodyParser = require("body-parser")
+const auth = require('./middleware/auth')
 
 //initialize firebase inorder to access its services
 admin.initializeApp(functions.config().firebase)
@@ -11,6 +12,7 @@ admin.initializeApp(functions.config().firebase)
 const app = express()
 
 app.use(cors())
+app.use(auth)
 
 //add the path to receive request and set json as bodyParser to process the body
 app.use(bodyParser.json())
