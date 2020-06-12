@@ -7,6 +7,7 @@
         <b-input v-model="user.steamId"></b-input>
       </b-field>
       <b-button type="is-primary" :loading="configFormLoading" @click="submitConfigForm">Save</b-button>
+      <b-button type="is-secondary" :loading="libraryLoading" @click="getLibrary">Test Steam Library</b-button>
     </div>
   </div>
 </template>
@@ -21,7 +22,8 @@ export default {
       user: {},
       newUser: false,
       userRequestLoading: false,
-      configFormLoading: false
+      configFormLoading: false,
+      libraryLoading: false
     }
   },
 
@@ -64,11 +66,28 @@ export default {
     async submitConfigForm() {
       this.configFormLoading = true
       try {
-        await this.axios.post('/users', this.user)
+        if (this.newUser) {
+          await this.axios.post('/users', this.user)
+        } else {
+          await this.axios.patch(`/users/${this.user.id}`, {
+            steamId: this.user.steamId
+          })
+        }
       } catch (error) {
         console.log(error)
       }
       this.configFormLoading = false
+    },
+
+    async getLibrary() {
+      this.libraryLoading = true
+      try {
+        const library = await this.axios.get(`/users/${this.user.id}/library`)
+        console.log(library.data)
+      } catch (error) {
+        console.log(error)
+      }
+      this.libraryLoading = false
     }
   }
 }
