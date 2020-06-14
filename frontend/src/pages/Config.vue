@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <h3>Steam-Quest Configuration</h3>
     <div class="config-container">
       <b-loading :active="userRequestLoading" :is-full-page="false" />
@@ -8,6 +8,19 @@
       </b-field>
       <b-button type="is-primary" :loading="configFormLoading" @click="submitConfigForm">Save</b-button>
       <b-button type="is-secondary" :loading="libraryLoading" @click="getLibrary">Test Steam Library</b-button>
+      <b-table v-if="!libraryLoading && library.length" :data="library" striped hoverable paginated paginated-simple>
+        <template slot-scope="props">
+          <b-table-column field="name" label="Game">
+            {{ props.row.name }}
+          </b-table-column>
+          <b-table-column label="Mark as Ignored">
+            <b-button type="is-danger">Ignore</b-button>
+          </b-table-column>
+          <b-table-column label="Mark as Previously Completed">
+            <b-button type="is-primary">Completed</b-button>
+          </b-table-column>
+        </template>
+      </b-table>
     </div>
   </div>
 </template>
@@ -23,7 +36,8 @@ export default {
       newUser: false,
       userRequestLoading: false,
       configFormLoading: false,
-      libraryLoading: false
+      libraryLoading: false,
+      library: []
     }
   },
 
@@ -83,7 +97,8 @@ export default {
       this.libraryLoading = true
       try {
         const library = await this.axios.get(`/users/${this.user.id}/library`)
-        console.log(library.data)
+
+        this.library = library.data
       } catch (error) {
         console.log(error)
       }

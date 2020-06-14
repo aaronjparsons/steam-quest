@@ -86,7 +86,10 @@ app.get('/users/:userId/library', async (req, res) => {
         }
       }
     )
-    res.status(200).json(response.data.response.games)
+    const sorted = response.data.response.games.sort((a, b) => {
+      return a.name.localeCompare(b.name)
+    })
+    res.status(200).json(sorted)
   } catch (error) {
     res.status(500).send(error)
   }
