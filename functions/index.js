@@ -45,7 +45,7 @@ app.get('/users/:userId', async (req, res) => {
 // Save broadcaster (config)
 app.post('/users', async (req, res) => {
   try {
-    await db.collection('users').doc(req.body.id).set({
+    const user = await db.collection('users').doc(req.body.id).set({
       steamId: req.body.steamId
     })
     res.status(201).send()
@@ -59,7 +59,7 @@ app.patch('/users/:userId', async (req, res) => {
   const userId = req.params.userId
 
   try {
-    await db.collection('users').doc(userId).update(req.body)
+    const user = await db.collection('users').doc(userId).update(req.body)
     res.status(200).send()
   } catch (error) {
     res.status(500).json({

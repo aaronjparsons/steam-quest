@@ -3,11 +3,11 @@
     <h3>Steam-Quest Configuration</h3>
     <div class="config-container">
       <b-loading :active="userRequestLoading" :is-full-page="false" />
-      <b-field label="Steam Profile ID">
-        <b-input v-model="user.steamId"></b-input>
+      <b-field label="Steam Profile ID" horizontal grouped>
+        <b-input v-model="steamId"></b-input>
+        <b-button type="is-primary" :loading="configFormLoading" :disabled="!hasSteamIdChanged" @click="submitConfigForm">Save Steam ID</b-button>
       </b-field>
-      <b-button type="is-primary" :loading="configFormLoading" @click="submitConfigForm">Save</b-button>
-      <b-button type="is-secondary" :loading="libraryLoading" @click="getLibrary">Test Steam Library</b-button>
+      <!-- <b-button type="is-secondary" :loading="libraryLoading" @click="getLibrary">Test Steam Library</b-button> -->
       <b-table v-if="!libraryLoading && library.length" :data="library" striped hoverable paginated paginated-simple>
         <template slot-scope="props">
           <b-table-column field="name" label="Game">
@@ -32,12 +32,19 @@ export default {
   data() {
     return {
       axios: null,
+      steamId: '',
       user: {},
       newUser: false,
       userRequestLoading: false,
       configFormLoading: false,
       libraryLoading: false,
       library: []
+    }
+  },
+
+  computed: {
+    hasSteamIdChanged() {
+      return this.steamId && this.steamId !== this.user.steamId
     }
   },
 
@@ -71,6 +78,9 @@ export default {
       try {
         const response = await this.axios.get(`/users/${id}`)
         this.user = response.data
+        if (this.user.steamId) {
+          this.steamId = this.user.steamId
+        }
       } catch (error) {
         console.error(error)
       }
@@ -81,12 +91,18 @@ export default {
       this.configFormLoading = true
       try {
         if (this.newUser) {
-          await this.axios.post('/users', this.user)
+          await this.axios.post('/users', {
+            id: this.user.id,
+            steamId: this.steamId
+          })
         } else {
           await this.axios.patch(`/users/${this.user.id}`, {
-            steamId: this.user.steamId
+            steamId: this.steamId
           })
         }
+
+        this.user.steamId = this.steamId
+        this.getLibrary()
       } catch (error) {
         console.log(error)
       }
