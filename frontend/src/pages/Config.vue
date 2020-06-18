@@ -1,26 +1,51 @@
 <template>
   <div class="container">
-    <h3>Steam-Quest Configuration</h3>
-    <div class="config-container">
-      <b-loading :active="userRequestLoading" :is-full-page="false" />
-      <b-field label="Steam Profile ID" horizontal grouped>
-        <b-input v-model="steamId"></b-input>
-        <b-button type="is-primary" :loading="configFormLoading" :disabled="!hasSteamIdChanged" @click="submitConfigForm">Save Steam ID</b-button>
-      </b-field>
-      <!-- <b-button type="is-secondary" :loading="libraryLoading" @click="getLibrary">Test Steam Library</b-button> -->
-      <b-table v-if="!libraryLoading && library.length" :data="library" striped hoverable paginated paginated-simple>
-        <template slot-scope="props">
-          <b-table-column field="name" label="Game">
-            {{ props.row.name }}
-          </b-table-column>
-          <b-table-column label="Mark as Ignored">
-            <b-button type="is-danger">Ignore</b-button>
-          </b-table-column>
-          <b-table-column label="Mark as Previously Completed">
-            <b-button type="is-primary">Completed</b-button>
-          </b-table-column>
-        </template>
-      </b-table>
+    <h3>Steam Quest Configuration</h3>
+    <div v-if="userRequestLoading" class="section">
+      <b-loading :active="true" :is-full-page="false" />
+      Loading
+    </div>
+    <div v-else>
+      <div class="section">
+        <div v-if="newUser" class="new-user-info">
+          <p>
+            Setting up Steam Quest is quite simple but it may take a while depending on the size of your Steam library,
+            and how much you want to customize the list of games to be voted on.
+          </p>
+          <p>
+            To begin configuring Steam Quest, enter your 17 digit Steam ID number. Your Steam account must not be private,
+            otherwise your game library will not be accessible.
+            <a href="https://www.google.com/search?q=how+to+find+my+steam+id" target="_blank">Not sure where to find your Steam ID number?</a>
+          </p>
+        </div>
+        <b-field label="Steam Profile ID" horizontal grouped>
+          <b-input v-model="steamId"></b-input>
+          <b-button type="is-primary" :loading="configFormLoading" :disabled="!hasSteamIdChanged" @click="submitConfigForm">Save Steam ID</b-button>
+        </b-field>
+      </div>
+      <div v-if="!libraryLoading && library.length" class="section">
+        <p>All items in your Steam library are included and will be eligible for voting by default. You may choose to mark an item as Ignored or Previously Completed if you do not want it to be eligible for voting.</p>
+        <p><b-tag type="is-danger" size="is-medium">Ignored</b-tag> items will not show up in the list and can not be voted on. <b-tooltip :label="ignoredTooltip" dashed multilined>What should be marked as ignored?</b-tooltip></p>
+        <p><b-tag type="is-primary" size="is-medium">Previously Completed</b-tag> games will show up in the list, but will be marked as completed and can not be voted on.</p>
+        <b-table :data="library" striped hoverable paginated paginated-simple>
+          <template slot-scope="props">
+            <!-- https://store.steampowered.com/app/ -->
+            <b-table-column field="name" label="Game">
+              {{ props.row.name }} <a :href="`https://store.steampowered.com/app/${props.row.appid}`" target="_blank"><b-icon icon="open-in-new" size="is-small"></b-icon></a>
+            </b-table-column>
+            <b-table-column label="Mark as Ignored" centered>
+              <b-checkbox v-model="ignored" type="is-danger" :native-value="props.row.appid"></b-checkbox>
+            </b-table-column>
+            <b-table-column label="Mark as Previously Completed" centered>
+              <b-checkbox v-model="completed" type="is-primary" :native-value="props.row.appid"></b-checkbox>
+            </b-table-column>
+          </template>
+        </b-table>
+        <p>After you have gone through your game library and marked all the necessary games, hit save to continue the configuration.</p>
+        <div class="library-save">
+          <b-button type="is-primary">Save Library & Continue</b-button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -38,7 +63,10 @@ export default {
       userRequestLoading: false,
       configFormLoading: false,
       libraryLoading: false,
-      library: []
+      library: [],
+      ignored: [],
+      completed: [],
+      ignoredTooltip: 'Software, games that can no longer be played (eg: dead servers), or games that don\'t have a definitive end (eg: MMO, multiplayer only)'
     }
   },
 
@@ -72,6 +100,12 @@ export default {
     })
   },
 
+  watch: {
+    completed: function (val) {
+      console.log(val)
+    }
+  },
+
   methods: {
     async getUser(id) {
       this.userRequestLoading = true
@@ -80,6 +114,7 @@ export default {
         this.user = response.data
         if (this.user.steamId) {
           this.steamId = this.user.steamId
+          this.getLibrary()
         }
       } catch (error) {
         console.error(error)
@@ -115,6 +150,7 @@ export default {
         const library = await this.axios.get(`/users/${this.user.id}/library`)
 
         this.library = library.data
+        console.log(this.library)
       } catch (error) {
         console.log(error)
       }
@@ -125,7 +161,12 @@ export default {
 </script>
 
 <style scoped>
-.config-container {
-  position: relative;
+.section p {
+  margin-bottom: 1rem;
+}
+
+.library-save {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
