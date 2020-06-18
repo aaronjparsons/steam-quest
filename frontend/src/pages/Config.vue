@@ -1,13 +1,13 @@
 <template>
   <div class="container">
     <h3>Steam Quest Configuration</h3>
-    <div v-if="userRequestLoading" class="section">
+    <div v-if="channelRequestLoading" class="section">
       <b-loading :active="true" :is-full-page="false" />
       Loading
     </div>
     <div v-else>
       <div class="section">
-        <div v-if="newUser" class="new-user-info">
+        <div v-if="newChannel" class="new-user-info">
           <p>
             Setting up Steam Quest is quite simple but it may take a while depending on the size of your Steam library,
             and how much you want to customize the list of games to be voted on.
@@ -19,8 +19,8 @@
           </p>
         </div>
         <b-field label="Steam Profile ID" horizontal grouped>
-          <b-input v-model="steamId"></b-input>
-          <b-button type="is-primary" :loading="configFormLoading" :disabled="!hasSteamIdChanged" @click="submitConfigForm">Save Steam ID</b-button>
+          <b-input v-model="local.steamId"></b-input>
+          <b-button type="is-primary" :loading="saveSteamIdLoading" :disabled="!hasSteamIdChanged" @click="saveSteamIdClick">Save Steam ID</b-button>
         </b-field>
       </div>
       <div v-if="!libraryLoading && library.length" class="section">
@@ -34,16 +34,16 @@
               {{ props.row.name }} <a :href="`https://store.steampowered.com/app/${props.row.appid}`" target="_blank"><b-icon icon="open-in-new" size="is-small"></b-icon></a>
             </b-table-column>
             <b-table-column label="Mark as Ignored" centered>
-              <b-checkbox v-model="ignored" type="is-danger" :native-value="props.row.appid"></b-checkbox>
+              <b-checkbox v-model="local.ignored" type="is-danger" :native-value="props.row.appid"></b-checkbox>
             </b-table-column>
             <b-table-column label="Mark as Previously Completed" centered>
-              <b-checkbox v-model="completed" type="is-primary" :native-value="props.row.appid"></b-checkbox>
+              <b-checkbox v-model="local.previouslyCompleted" type="is-primary" :native-value="props.row.appid"></b-checkbox>
             </b-table-column>
           </template>
         </b-table>
         <p>After you have gone through your game library and marked all the necessary games, hit save to continue the configuration.</p>
         <div class="library-save">
-          <b-button type="is-primary">Save Library & Continue</b-button>
+          <b-button type="is-primary" :loading="saveLibraryLoading" @click="saveLibraryClick">Save Library & Continue</b-button>
         </div>
       </div>
     </div>
@@ -58,21 +58,26 @@ export default {
     return {
       axios: null,
       steamId: '',
-      user: {},
-      newUser: false,
-      userRequestLoading: false,
-      configFormLoading: false,
-      libraryLoading: false,
+      local: {
+        steamId: '',
+        ignored: [],
+        previouslyCompleted: [],
+        completed: []
+      },
+      channel: {},
+      newChannel: false,
+      channelRequestLoading: false,
+      saveSteamIdLoading: false,
       library: [],
-      ignored: [],
-      completed: [],
-      ignoredTooltip: 'Software, games that can no longer be played (eg: dead servers), or games that don\'t have a definitive end (eg: MMO, multiplayer only)'
+      libraryLoading: false,
+      ignoredTooltip: 'Software, games that can no longer be played (eg: dead servers), or games that don\'t have a definitive end (eg: MMO, multiplayer only)',
+      saveLibraryLoading: false
     }
   },
 
   computed: {
     hasSteamIdChanged() {
-      return this.steamId && this.steamId !== this.user.steamId
+      return this.local.steamId && this.local.steamId !== this.channel.steamId
     }
   },
 
@@ -84,15 +89,7 @@ export default {
 
       this.axios = createAxios(auth.token)
 
-      await this.getUser(auth.userId)
-
-      if (!Object.keys(this.user).length) {
-        this.newUser = true
-        this.user = {
-          id: auth.userId,
-          steamId: ''
-        }
-      }
+      await this.getChannel(auth.channelId)
     })
 
     window.Twitch.ext.onContext(context => {
@@ -107,47 +104,63 @@ export default {
   },
 
   methods: {
-    async getUser(id) {
-      this.userRequestLoading = true
+    async getChannel(id) {
+      this.channelRequestLoading = true
       try {
-        const response = await this.axios.get(`/users/${id}`)
-        this.user = response.data
-        if (this.user.steamId) {
-          this.steamId = this.user.steamId
+        const response = await this.axios.get(`/channels/${id}`)
+        this.channel = response.data
+
+        if (this.channel && this.channel.steamId) {
+          this.local = this.channel
           this.getLibrary()
+        } else {
+          this.newChannel = true
+          this.local = {
+            id,
+            ...this.local
+          }
         }
       } catch (error) {
         console.error(error)
       }
-      this.userRequestLoading = false
+      this.channelRequestLoading = false
     },
 
-    async submitConfigForm() {
-      this.configFormLoading = true
-      try {
-        if (this.newUser) {
-          await this.axios.post('/users', {
-            id: this.user.id,
-            steamId: this.steamId
-          })
-        } else {
-          await this.axios.patch(`/users/${this.user.id}`, {
-            steamId: this.steamId
-          })
-        }
+    async saveSteamIdClick() {
+      this.saveSteamIdLoading = true
+      if (this.newChannel) {
+        await this.createChannelData()
+      } else {
+        await this.updateChannelData()
+      }
+      this.saveSteamIdLoading = false
+      this.getLibrary()
+    },
 
-        this.user.steamId = this.steamId
-        this.getLibrary()
+    async createChannelData() {
+      try {
+        await this.axios.post('/channels', this.local)
+
+        this.channel = this.local
       } catch (error) {
         console.log(error)
       }
-      this.configFormLoading = false
+    },
+
+    async updateChannelData() {
+      try {
+        await this.axios.patch(`/channels/${this.channel.id}`, this.local)
+
+        this.channel = this.local
+      } catch (error) {
+        console.log(error)
+      }
     },
 
     async getLibrary() {
       this.libraryLoading = true
       try {
-        const library = await this.axios.get(`/users/${this.user.id}/library`)
+        const library = await this.axios.get(`/channels/${this.channel.id}/library`)
 
         this.library = library.data
         console.log(this.library)
@@ -155,6 +168,12 @@ export default {
         console.log(error)
       }
       this.libraryLoading = false
+    },
+
+    async saveLibraryClick() {
+      this.saveLibraryLoading = true
+      await this.updateChannelData()
+      this.saveLibraryLoading = false
     }
   }
 }

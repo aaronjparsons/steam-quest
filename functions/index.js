@@ -22,17 +22,24 @@ app.use(bodyParser.urlencoded({ extended: false }))
 //initialize the database and the collection
 const db = admin.firestore()
 
-// Get broadcaster (config)
-app.get('/users/:userId', async (req, res) => {
-  const userId = req.params.userId
+// Get broadcaster channel (config)
+app.get('/channels/:channelId', async (req, res) => {
+  const channelId = req.params.channelId
 
   try {
-    const user = await db.collection('users').doc(userId).get()
+    // Only the owner of the channel may access this route
+    if (!res.locals.userId || res.locals.userId !== channelId) {
+      res.status(401).json({
+        error: 'Not Authorized'
+      })
+    }
 
-    if (user.exists) {
+    const channel = await db.collection('channels').doc(channelId).get()
+
+    if (channel.exists) {
       res.status(200).json({
-        id: user.id,
-        ...user.data()
+        id: channel.id,
+        ...channel.data()
       })
     } else {
       res.status(200).json({})
@@ -42,11 +49,14 @@ app.get('/users/:userId', async (req, res) => {
   }
 })
 
-// Save broadcaster (config)
-app.post('/users', async (req, res) => {
+// Save broadcaster channel (config)
+app.post('/channels', async (req, res) => {
   try {
-    const user = await db.collection('users').doc(req.body.id).set({
-      steamId: req.body.steamId
+    const channel = await db.collection('channels').doc(req.body.id).set({
+      steamId: req.body.steamId,
+      ignored: req.body.ignored,
+      previouslyCompleted: req.body.previouslyCompleted,
+      completed: req.body.completed
     })
     res.status(201).send()
   } catch (error) {
@@ -54,12 +64,12 @@ app.post('/users', async (req, res) => {
   }
 })
 
-// Update broadcaster (config)
-app.patch('/users/:userId', async (req, res) => {
-  const userId = req.params.userId
+// Update broadcaster channel (config)
+app.patch('/channels/:channelId', async (req, res) => {
+  const channelId = req.params.channelId
 
   try {
-    const user = await db.collection('users').doc(userId).update(req.body)
+    const channel = await db.collection('channels').doc(channelId).update(req.body)
     res.status(200).send()
   } catch (error) {
     res.status(500).json({
@@ -69,18 +79,18 @@ app.patch('/users/:userId', async (req, res) => {
 })
 
 // Get broadcaster library
-app.get('/users/:userId/library', async (req, res) => {
-  const userId = req.params.userId
+app.get('/channels/:channelId/library', async (req, res) => {
+  const channelId = req.params.channelId
 
   try {
-    const user = await db.collection('users').doc(userId).get()
+    const channel = await db.collection('channels').doc(channelId).get()
     const response = await axios.get(
       `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${
         functions.config().steamquest.steamkey
       }`,
       {
         params: {
-          steamid: user.data().steamId,
+          steamid: channel.data().steamId,
           format: 'json',
           include_appinfo: 'true'
         }
