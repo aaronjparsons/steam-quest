@@ -1,50 +1,110 @@
 <template>
   <div class="container">
     <h3>Steam Quest Configuration</h3>
-    <div v-if="channelRequestLoading" class="section">
-      <b-loading :active="true" :is-full-page="false" />
-      Loading
-    </div>
-    <div v-else>
-      <div class="section">
-        <div v-if="newChannel" class="new-user-info">
-          <p>
-            Setting up Steam Quest is quite simple but it may take a while depending on the size of your Steam library,
-            and how much you want to customize the list of games to be voted on.
-          </p>
-          <p>
-            To begin configuring Steam Quest, enter your 17 digit Steam ID number. Your Steam account must not be private,
-            otherwise your game library will not be accessible.
-            <a href="https://www.google.com/search?q=how+to+find+my+steam+id" target="_blank">Not sure where to find your Steam ID number?</a>
-          </p>
-        </div>
-        <b-field label="Steam Profile ID" horizontal grouped>
-          <b-input v-model="local.steamId"></b-input>
-          <b-button type="is-primary" :loading="saveSteamIdLoading" :disabled="!hasSteamIdChanged" @click="saveSteamIdClick">Save Steam ID</b-button>
-        </b-field>
+    <div class="section">
+      <div v-if="channelRequestLoading" class="section">
+        <b-loading :active="true" :is-full-page="false" />
+        Loading
       </div>
-      <div v-if="!libraryLoading && library.length" class="section">
-        <p>All items in your Steam library are included and will be eligible for voting by default. You may choose to mark an item as Ignored or Previously Completed if you do not want it to be eligible for voting.</p>
-        <p><b-tag type="is-danger" size="is-medium">Ignored</b-tag> items will not show up in the list and can not be voted on. <b-tooltip :label="ignoredTooltip" dashed multilined>What should be marked as ignored?</b-tooltip></p>
-        <p><b-tag type="is-primary" size="is-medium">Previously Completed</b-tag> games will show up in the list, but will be marked as completed and can not be voted on.</p>
-        <b-table :data="library" striped hoverable paginated paginated-simple>
-          <template slot-scope="props">
-            <!-- https://store.steampowered.com/app/ -->
-            <b-table-column field="name" label="Game">
-              {{ props.row.name }} <a :href="`https://store.steampowered.com/app/${props.row.appid}`" target="_blank"><b-icon icon="open-in-new" size="is-small"></b-icon></a>
-            </b-table-column>
-            <b-table-column label="Mark as Ignored" centered>
-              <b-checkbox v-model="local.ignored" type="is-danger" :native-value="props.row.appid"></b-checkbox>
-            </b-table-column>
-            <b-table-column label="Mark as Previously Completed" centered>
-              <b-checkbox v-model="local.previouslyCompleted" type="is-primary" :native-value="props.row.appid"></b-checkbox>
-            </b-table-column>
+      <div v-else>
+        <!-- NEW CHANNEL SETUP -->
+        <b-steps
+          v-model="activeStep"
+          animated
+          rounded
+        >
+          <b-step-item step="1" label="Steam ID">
+            <div class="section">
+              <div class="new-user-info">
+                <p>
+                  Setting up Steam Quest is quite simple but it may take a while depending on the size of your Steam library,
+                  and how much you want to customize the list of games to be voted on.
+                </p>
+                <p>
+                  To begin configuring Steam Quest, enter your 17 digit Steam ID number. Your Steam account must not be private,
+                  otherwise your game library will not be accessible.
+                  <a href="https://www.google.com/search?q=how+to+find+my+steam+id" target="_blank">Not sure where to find your Steam ID number?</a>
+                </p>
+              </div>
+              <b-field label="Steam Profile ID">
+                <b-input v-model="local.steamId" class="max-width-input" placeholder="Eg: 10483967563755997"></b-input>
+              </b-field>
+            </div>
+          </b-step-item>
+
+          <b-step-item step="2" label="Customize Library">
+            <div class="section">
+              <p>All items in your Steam library are included and will be eligible for voting by default. You may choose to mark an item as Ignored or Previously Completed if you do not want it to be eligible for voting.</p>
+              <p><b-tag type="is-danger" size="is-medium">Ignored</b-tag> items will not show up in the list and can not be voted on. <b-tooltip :label="ignoredTooltip" dashed multilined>What should be marked as ignored?</b-tooltip></p>
+              <p><b-tag type="is-primary" size="is-medium">Previously Completed</b-tag> games will show up in the list, but will be marked as completed and can not be voted on.</p>
+              <b-table :data="library" striped hoverable paginated paginated-simple>
+                <template slot-scope="props">
+                  <b-table-column field="name" label="Game">
+                    {{ props.row.name }} <a :href="`https://store.steampowered.com/app/${props.row.appid}`" target="_blank"><b-icon icon="open-in-new" size="is-small"></b-icon></a>
+                  </b-table-column>
+                  <b-table-column label="Mark as Ignored" centered>
+                    <b-checkbox v-model="local.ignored" type="is-danger" :native-value="props.row.appid"></b-checkbox>
+                  </b-table-column>
+                  <b-table-column label="Mark as Previously Completed" centered>
+                    <b-checkbox v-model="local.previouslyCompleted" type="is-primary" :native-value="props.row.appid"></b-checkbox>
+                  </b-table-column>
+                </template>
+              </b-table>
+              <p>After you have gone through your game library and marked all the necessary games, hit save to continue the configuration.</p>
+            </div>
+          </b-step-item>
+
+          <b-step-item step="3" label="Channel Options">
+            <div class="section">
+              <h2 class="title is-4">Setup Bits</h2>
+              <h4 class="subtitle is-6">(Optional)</h4>
+              <b-field :message="bitsEnableMessage" :type="channelBitsEnabled ? '' : 'is-danger'">
+                <b-checkbox v-model="local.bitsEnabled" :disabled="!channelBitsEnabled">Enable bits for Steam Quest?</b-checkbox>
+              </b-field>
+              <b-field v-if="local.bitsEnabled" label="Bit amount per vote" :message="bitsVoteValueMessage">
+                <b-numberinput v-model="local.bitsVoteValue" class="max-width-input" min="1" max="1000"></b-numberinput>
+              </b-field>
+            </div>
+            <div class="section">
+              <h2 class="title is-4">Set First Game</h2>
+              <h4 class="subtitle is-6">(Optional)</h4>
+              <b-field :message="firstGameMessage">
+                <b-autocomplete
+                  v-model="currentGameInput"
+                  placeholder="Search for a game..."
+                  :data="filteredLibrary"
+                  field="name"
+                  @select="option => local.current = option.appid">
+                </b-autocomplete>
+              </b-field>
+            </div>
+          </b-step-item>
+
+          <b-step-item step="4" label="Setup Complete"></b-step-item>
+
+          <template
+            slot="navigation"
+            slot-scope="{previous, next}"
+          >
+            <div class="step-nav">
+              <b-button
+                :disabled="previous.disabled"
+                @click.prevent="previous.action"
+              >
+                Previous
+              </b-button>
+              <b-button
+                type="is-primary"
+                :disabled="next.disabled"
+                :loading="nextStepLoading"
+                @click.prevent="nextStepAction"
+              >
+                Next
+              </b-button>
+            </div>
           </template>
-        </b-table>
-        <p>After you have gone through your game library and marked all the necessary games, hit save to continue the configuration.</p>
-        <div class="library-save">
-          <b-button type="is-primary" :loading="saveLibraryLoading" @click="saveLibraryClick">Save Library & Continue</b-button>
-        </div>
+        </b-steps>
+        <!-- NEW CHANNEL SETUP END -->
       </div>
     </div>
   </div>
@@ -57,53 +117,97 @@ export default {
   data() {
     return {
       axios: null,
+      activeStep: 2,
       steamId: '',
       local: {
         steamId: '',
         ignored: [],
         previouslyCompleted: [],
-        completed: []
+        completed: [],
+        voters: [],
+        votes: [],
+        current: '',
+        bitsEnabled: false,
+        bitsVoteValue: 20
       },
+      currentGameInput: '',
       channel: {},
       newChannel: false,
       channelRequestLoading: false,
-      saveSteamIdLoading: false,
       library: [],
       libraryLoading: false,
-      ignoredTooltip: 'Software, games that can no longer be played (eg: dead servers), or games that don\'t have a definitive end (eg: MMO, multiplayer only)',
-      saveLibraryLoading: false
+      ignoredTooltip: 'Software, videos/movies, and anything else you do not want to show up in your library list.',
+      firstGameMessage: 'Already know what the first game you\'ll be playing is? Set it here!',
+      nextStepLoading: false
     }
   },
 
   computed: {
-    hasSteamIdChanged() {
-      return this.local.steamId && this.local.steamId !== this.channel.steamId
+    channelBitsEnabled() {
+      return window.Twitch.ext.features.isBitsEnabled
+    },
+    bitsEnableMessage() {
+      return this.channelBitsEnabled
+        ? 'Enabling bits on this extension will allow viewers to use bits to increase their vote count.'
+        : 'Your channel does not allow bits to be enabled.'
+    },
+    bitsVoteValueMessage() {
+      return `Example: A viewer can spend ${this.local.bitsVoteValue * 5} bits to have their vote counted 5 times.`
+    },
+    filteredLibrary() {
+      return this.library.filter(app => {
+        if (this.local.ignored.includes(app.appid) || this.local.previouslyCompleted.includes(app.appid)) {
+          return false
+        } else {
+          return app.name.toLowerCase().includes(this.currentGameInput.toLowerCase())
+        }
+      })
     }
   },
 
   mounted() {
     window.Twitch.ext.onAuthorized(async (auth) => {
-      console.log('channelId: ', auth.channelId)
-      console.log('token: ', auth.token)
-      console.log('userId: ', auth.userId)
-
+      console.log('auth: ', auth)
       this.axios = createAxios(auth.token)
-
       await this.getChannel(auth.channelId)
     })
 
     window.Twitch.ext.onContext(context => {
-      window.Twitch.ext.rig.log('mode: ', context.mode)
+      window.Twitch.ext.rig.log('context: ', context)
     })
-  },
 
-  watch: {
-    completed: function (val) {
-      console.log(val)
-    }
+    console.log('Bits Enabled?: ', window.Twitch.ext.features.isBitsEnabled)
   },
 
   methods: {
+    async nextStepAction() {
+      this.nextStepLoading = true
+
+      switch (this.activeStep) {
+        case 0:
+          if (this.channel.steamId) {
+            await this.updateChannelData()
+          } else {
+            await this.createChannelData()
+          }
+          await this.getLibrary()
+
+          if (this.library.length) {
+            // TODO - Error handling for incorrect steam id or private account
+            this.activeStep = 1
+          }
+          break
+        case 1:
+          await this.updateChannelData()
+          this.activeStep = 2
+          break
+        default:
+          break
+      }
+
+      this.nextStepLoading = false
+    },
+
     async getChannel(id) {
       this.channelRequestLoading = true
       try {
@@ -124,17 +228,6 @@ export default {
         console.error(error)
       }
       this.channelRequestLoading = false
-    },
-
-    async saveSteamIdClick() {
-      this.saveSteamIdLoading = true
-      if (this.newChannel) {
-        await this.createChannelData()
-      } else {
-        await this.updateChannelData()
-      }
-      this.saveSteamIdLoading = false
-      this.getLibrary()
     },
 
     async createChannelData() {
@@ -168,12 +261,6 @@ export default {
         console.log(error)
       }
       this.libraryLoading = false
-    },
-
-    async saveLibraryClick() {
-      this.saveLibraryLoading = true
-      await this.updateChannelData()
-      this.saveLibraryLoading = false
     }
   }
 }
@@ -184,8 +271,16 @@ export default {
   margin-bottom: 1rem;
 }
 
-.library-save {
+.step-nav {
   display: flex;
   justify-content: flex-end;
+}
+
+.step-nav .button:last-of-type {
+  margin-left: 10px;
+}
+
+.max-width-input {
+  max-width: 300px;
 }
 </style>
