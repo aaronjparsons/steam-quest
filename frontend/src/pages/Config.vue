@@ -117,7 +117,7 @@ export default {
   data() {
     return {
       axios: null,
-      activeStep: 2,
+      activeStep: 0,
       steamId: '',
       local: {
         steamId: '',
@@ -200,6 +200,10 @@ export default {
         case 1:
           await this.updateChannelData()
           this.activeStep = 2
+          break
+        case 2:
+          await this.updateChannelData()
+          this.activeStep = 3
           break
         default:
           break
