@@ -74,13 +74,18 @@
                   placeholder="Search for a game..."
                   :data="filteredLibrary"
                   field="name"
-                  @select="option => local.current = option.appid">
+                  @select="option => local.current = { appid: option.appid, name: option.name }">
                 </b-autocomplete>
               </b-field>
             </div>
           </b-step-item>
 
-          <b-step-item step="4" label="Setup Complete"></b-step-item>
+          <b-step-item step="4" label="Setup Complete">
+            <div class="has-text-centered">
+              <h2 class="title is-5">Steam Quest configuration complete</h2>
+              <h2 class="title is-5">Good luck and enjoy the adventure!</h2>
+            </div>
+          </b-step-item>
 
           <template
             slot="navigation"
@@ -124,7 +129,6 @@ export default {
         ignored: [],
         previouslyCompleted: [],
         completed: [],
-        voters: [],
         votes: [],
         current: '',
         bitsEnabled: false,
@@ -199,6 +203,9 @@ export default {
           break
         case 1:
           await this.updateChannelData()
+          if (this.local.current && this.local.current.name) {
+            this.currentGameInput = this.local.current.name
+          }
           this.activeStep = 2
           break
         case 2:
@@ -257,7 +264,7 @@ export default {
     async getLibrary() {
       this.libraryLoading = true
       try {
-        const library = await this.axios.get(`/channels/${this.channel.id}/library`)
+        const library = await this.axios.get(`/channels/${this.channel.id}/steamlibrary`)
 
         this.library = library.data
         console.log(this.library)
