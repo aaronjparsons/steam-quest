@@ -6,7 +6,7 @@
       </div>
       <h2 class="subtitle">{{ item.name }}</h2>
       <div v-if="completed">
-        Completed
+        <p>{{ item.completed }}</p>
       </div>
       <div v-else>
         <div>

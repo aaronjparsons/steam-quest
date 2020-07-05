@@ -1,19 +1,28 @@
 <template>
   <div class="container">
-    <PanelStatsView
-      v-if="currentView === 'stats'"
-      :stats="panelStats"
-      @voteClicked="goToListsView"
-    />
-    <PanelListsView
-      v-else-if="currentView === 'vote'"
-      :library="library"
-      :completed="completed"
-      @backClicked="goToStatsView"
-    />
-    <div v-else>
-      {{ selectedGame.name }}
-    </div>
+    <transition-group :name="transition">
+      <PanelStatsView
+        v-if="currentView === 'stats'"
+        key="stats"
+        :stats="panelStats"
+        @voteClicked="goToListsView"
+      />
+      <PanelListsView
+        v-else-if="currentView === 'vote'"
+        key="vote"
+        :library="library"
+        :completed="completed"
+        @backClicked="goToStatsView"
+        @gameVoteSelected="goToGameVoteView"
+      />
+      <PanelVoteView
+        v-else
+        key="gameVote"
+        :game="selectedGame"
+        @backClicked="goToListsView"
+        @submitVote="submitVote"
+      />
+    </transition-group>
   </div>
 </template>
 
@@ -21,16 +30,21 @@
 import createAxios from '../modules/axios'
 import PanelStatsView from '../components/PanelStatsView'
 import PanelListsView from '../components/PanelListsView'
+import PanelVoteView from '../components/PanelVoteView'
+
 
 export default {
   components: {
     PanelStatsView,
-    PanelListsView
+    PanelListsView,
+    PanelVoteView
   },
 
   data() {
     return {
-      channedId: null,
+      axios: null,
+      transition: 'slide-prev',
+      channelId: null,
       currentView: 'stats',
       panelStats: {},
       libraryLoading: false,
@@ -43,8 +57,8 @@ export default {
   mounted() {
     window.Twitch.ext.onAuthorized(async (auth) => {
       console.log('auth: ', auth)
-      this.axios = createAxios(auth.token)
-      await this.getChannel(auth.channelId)
+      this.axios = createAxios(auth.token, auth.channelId)
+      await this.getChannel()
     })
 
     window.Twitch.ext.onContext(context => {
@@ -56,22 +70,29 @@ export default {
 
   methods: {
     goToListsView() {
+      this.transition = 'slide-prev'
+      if (this.selectedGame) {
+        this.transition = 'slide-next'
+        this.selectedGame = null
+      }
       this.currentView = 'vote'
       this.getLibrary()
     },
 
     goToStatsView() {
+      this.transition = 'slide-next'
       this.currentView = 'stats'
     },
 
-    moveToVote(item) {
-      this.selectedGame = item
+    goToGameVoteView(game) {
+      this.transition = 'slide-prev'
+      this.selectedGame = game
       this.currentView = 'gameVote'
     },
 
-    async getChannel(id) {
+    async getChannel() {
       try {
-        const data = await this.axios.get(`/channels/${id}/panelstats`)
+        const data = await this.axios.get('/panelstats')
         console.log(data.data)
         this.panelStats = data.data
       } catch (error) {
@@ -82,7 +103,7 @@ export default {
     async getLibrary() {
       this.libraryLoading = true
       try {
-        const library = await this.axios.get(`/channels/${this.panelStats.channelId}/library`)
+        const library = await this.axios.get('/library')
 
         this.library = library.data.library
         this.completed = library.data.completed
@@ -91,6 +112,14 @@ export default {
         console.log(error)
       }
       this.libraryLoading = false
+    },
+
+    async submitVote() {
+      try {
+        await this.axios.post('/vote', {})
+      } catch (error) {
+        console.log(error)
+      }
     }
   }
 }

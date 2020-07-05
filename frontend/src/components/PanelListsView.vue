@@ -34,7 +34,7 @@
               </b-icon>
             </a>
           </div>
-          <CardContent v-if="voteListOpen === index" :item="item" @gameSelected="moveToVote(item)" />
+          <CardContent v-if="voteListOpen === index" :item="item" @gameSelected="emitGameVoteSelected(item)" />
         </b-collapse>
       </b-tab-item>
       <b-tab-item label="Completed">
@@ -140,6 +140,10 @@ export default {
 
     emitBackClicked() {
       this.$emit('backClicked')
+    },
+
+    emitGameVoteSelected(game) {
+      this.$emit('gameVoteSelected', game)
     }
   }
 }
