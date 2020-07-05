@@ -13,7 +13,7 @@
           Total Votes: XX
         </div>
         <div>
-          <b-button type="is-primary">Vote For This Game</b-button>
+          <b-button type="is-primary" @click="voteClick">Vote For This Game</b-button>
         </div>
       </div>
     </div>
@@ -30,6 +30,12 @@
       completed: {
         type: Boolean,
         default: false
+      }
+    },
+
+    methods: {
+      voteClick() {
+        this.$emit('gameSelected')
       }
     }
   }
