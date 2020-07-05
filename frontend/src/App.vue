@@ -8,4 +8,8 @@ export default {
 }
 </script>
 
-<style></style>
+<style>
+.container {
+  padding: 10px;
+}
+</style>

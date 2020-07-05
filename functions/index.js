@@ -24,46 +24,5 @@ app.use('/', routes)
 admin.initializeApp(functions.config().firebase)
 app.locals.db = admin.firestore()
 
-// Get broadcaster channel data
-// app.get('/channels/:channelId/channel', async (req, res) => {
-//   const channelId = req.params.channelId
-
-//   try {
-//     const channel = await db.collection('channels').doc(channelId).get()
-//     const steamLibrary = await axios.get(
-//       `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${
-//         functions.config().steamquest.steamkey
-//       }`,
-//       {
-//         params: {
-//           steamid: channel.data().steamId,
-//           format: 'json',
-//           include_appinfo: 'true'
-//         }
-//       }
-//     )
-
-//     const library = steamLibrary.data.response.games.filter(item => {
-//       item.completed = null
-//       item.totalVotes = null
-//       if (channel.data().previouslyCompleted.includes(item.appid)) {
-//         item.completed = 'Previously Completed'
-//       }
-//       if (channel.data().votes[item.appid]) {
-//         item.totalVotes = Object.values(channel.data().votes[item.appid]).reduce((a, b) => {
-//           return a + b
-//         }, 0)
-//       }
-//       return !channel.data().ignored.includes(item.appid)
-//     }).sort((a, b) => {
-//       return a.name.localeCompare(b.name)
-//     })
-
-//     res.status(200).json(library)
-//   } catch (error) {
-//     res.status(500).send(error)
-//   }
-// })
-
 //define google cloud function name
 exports.api = functions.https.onRequest(app)
