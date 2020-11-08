@@ -10,7 +10,7 @@
       </div>
       <div v-else>
         <div>
-          Total Votes: XX
+          Total Votes: {{ item.totalVotes }}
         </div>
         <div>
           <b-button type="is-primary" @click="voteClick">Vote For This Game</b-button>

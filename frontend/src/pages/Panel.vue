@@ -1,13 +1,11 @@
 <template>
-  <div v-if="configNotComplete" class="no-config">
-    <p>This broadcaster has not completed the configuration for Steam Quest</p>
-  </div>
-  <div v-else class="container">
+  <div class="container">
     <transition-group :name="transition">
       <PanelStatsView
         v-if="currentView === 'stats'"
         key="stats"
         :stats="panelStats"
+        :config-complete="configComplete"
         @voteClicked="goToListsView"
       />
       <PanelListsView
@@ -54,7 +52,7 @@ export default {
       library: [],
       completed: [],
       selectedGame: null,
-      configNotComplete: false
+      configComplete: true
     }
   },
 
@@ -101,7 +99,7 @@ export default {
         this.panelStats = data.data
       } catch (error) {
         if (error.response.status === 404) {
-          this.configNotComplete = true;
+          this.configComplete = false;
         }
         console.log(error)
       }
@@ -121,9 +119,9 @@ export default {
       this.libraryLoading = false
     },
 
-    async submitVote(game) {
+    async submitVote(voteData) {
       try {
-        await this.axios.post(`/channels/${this.channelId}/vote`, game)
+        await this.axios.post(`/channels/${this.channelId}/vote`, voteData)
       } catch (error) {
         console.log(error)
       }
@@ -133,9 +131,5 @@ export default {
 </script>
 
 <style scoped>
-  .no-config {
-    padding: 10px;
-    text-align: center;
-    font-size: 20px;
-  }
+
 </style>

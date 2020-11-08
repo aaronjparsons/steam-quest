@@ -25,7 +25,10 @@ export default {
     },
 
     emitSubmitVote() {
-      this.$emit('submitVote', this.game)
+      this.$emit('submitVote', {
+        appid: this.game.appid,
+        votes: 1
+      })
     }
   }
 }

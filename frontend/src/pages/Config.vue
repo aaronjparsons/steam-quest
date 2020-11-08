@@ -130,8 +130,8 @@ export default {
         ignored: [],
         previouslyCompleted: [],
         completed: [],
-        votes: [],
-        current: '',
+        votes: {},
+        current: {},
         bitsEnabled: false,
         bitsVoteValue: 20
       },
