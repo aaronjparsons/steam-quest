@@ -6,10 +6,12 @@ module.exports = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1]
     const key = Buffer.from(functions.config().steamquest.twitchkey, 'base64')
     const decodedToken = jwt.verify(token, key, { algorithms: ['HS256'] })
+    console.log(decodedToken)
     const userId = decodedToken.user_id
 
-    // Store the verified user ID for future use
+    // Store some data for future use
     res.locals.userId = userId
+    res.locals.channelId = decodedToken.channel_id
 
     if (req.body.userId && req.body.userId !== userId) {
       throw 'Invalid user ID'

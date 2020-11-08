@@ -25,7 +25,7 @@ export default {
     },
 
     emitSubmitVote() {
-      this.$emit('submitVote')
+      this.$emit('submitVote', this.game)
     }
   }
 }

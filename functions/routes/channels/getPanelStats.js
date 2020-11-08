@@ -17,6 +17,10 @@ module.exports = async (req, res) => {
   try {
     const channel = await req.app.locals.db.collection('channels').doc(channelId).get()
 
+    if (!channel.exists) {
+      res.status(404).send()
+    }
+
     response.channelId = channel.data().id
     if (channel.data().current.appid) {
       response.currentGame = channel.data().current

@@ -1,5 +1,8 @@
 <template>
-  <div class="container">
+  <div v-if="configNotComplete" class="no-config">
+    <p>This broadcaster has not completed the configuration for Steam Quest</p>
+  </div>
+  <div v-else class="container">
     <transition-group :name="transition">
       <PanelStatsView
         v-if="currentView === 'stats'"
@@ -50,7 +53,8 @@ export default {
       libraryLoading: false,
       library: [],
       completed: [],
-      selectedGame: null
+      selectedGame: null,
+      configNotComplete: false
     }
   },
 
@@ -58,6 +62,7 @@ export default {
     window.Twitch.ext.onAuthorized(async (auth) => {
       console.log('auth: ', auth)
       this.axios = createAxios(auth.token, auth.channelId)
+      this.channelId = auth.channelId;
       await this.getChannel()
     })
 
@@ -92,10 +97,12 @@ export default {
 
     async getChannel() {
       try {
-        const data = await this.axios.get('/panelstats')
-        console.log(data.data)
+        const data = await this.axios.get(`/channels/${this.channelId}/panelstats`)
         this.panelStats = data.data
       } catch (error) {
+        if (error.response.status === 404) {
+          this.configNotComplete = true;
+        }
         console.log(error)
       }
     },
@@ -103,7 +110,7 @@ export default {
     async getLibrary() {
       this.libraryLoading = true
       try {
-        const library = await this.axios.get('/library')
+        const library = await this.axios.get(`/channels/${this.channelId}/library`)
 
         this.library = library.data.library
         this.completed = library.data.completed
@@ -114,9 +121,9 @@ export default {
       this.libraryLoading = false
     },
 
-    async submitVote() {
+    async submitVote(game) {
       try {
-        await this.axios.post('/vote', {})
+        await this.axios.post(`/channels/${this.channelId}/vote`, game)
       } catch (error) {
         console.log(error)
       }
@@ -126,5 +133,9 @@ export default {
 </script>
 
 <style scoped>
-
+  .no-config {
+    padding: 10px;
+    text-align: center;
+    font-size: 20px;
+  }
 </style>

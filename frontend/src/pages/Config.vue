@@ -50,7 +50,7 @@
                   </b-table-column>
                 </template>
               </b-table>
-              <p>After you have gone through your game library and marked all the necessary games, hit save to continue the configuration.</p>
+              <p>After you have gone through your game library and marked all necessary games, you can continue with the rest of the configuration. You always come back later to edit your game library.</p>
             </div>
           </b-step-item>
 
@@ -62,7 +62,7 @@
                 <b-checkbox v-model="local.bitsEnabled" :disabled="!channelBitsEnabled">Enable bits for Steam Quest?</b-checkbox>
               </b-field>
               <b-field v-if="local.bitsEnabled" label="Bit amount per vote" :message="bitsVoteValueMessage">
-                <b-numberinput v-model="local.bitsVoteValue" class="max-width-input" min="1" max="1000"></b-numberinput>
+                <b-numberinput v-model="local.bitsVoteValue" class="max-width-input" min="1"></b-numberinput>
               </b-field>
             </div>
             <div class="section">
@@ -81,7 +81,7 @@
           </b-step-item>
 
           <b-step-item step="4" label="Setup Complete">
-            <div class="has-text-centered">
+            <div class="complete has-text-centered">
               <h2 class="title is-5">Steam Quest configuration complete</h2>
               <h2 class="title is-5">Good luck and enjoy the adventure!</h2>
             </div>
@@ -99,6 +99,7 @@
                 Previous
               </b-button>
               <b-button
+                v-if="activeStep < 3"
                 type="is-primary"
                 :disabled="next.disabled"
                 :loading="nextStepLoading"
@@ -141,7 +142,7 @@ export default {
       library: [],
       libraryLoading: false,
       ignoredTooltip: 'Software, videos/movies, and anything else you do not want to show up in your library list.',
-      firstGameMessage: 'Already know what the first game you\'ll be playing is? Set it here!',
+      firstGameMessage: 'Already know the first game you\'ll be playing? Set it here!',
       nextStepLoading: false
     }
   },
@@ -293,5 +294,9 @@ export default {
 
 .max-width-input {
   max-width: 300px;
+}
+
+.complete {
+  padding: 40px 0;
 }
 </style>
