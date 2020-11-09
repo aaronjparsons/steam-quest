@@ -31,7 +31,11 @@ module.exports = async (req, res) => {
     for (const [key, value] of Object.entries(data.votes)) {
       // Get viewerVote
       if (value[user]) {
-        stats.viewerVote = true
+        const game = steamLibrary.find(app => app.appid == key)
+        stats.viewerVote = {
+          game: game.name,
+          votes: value[user]
+        }
       }
       // Top games
       const gameVotes = Object.values(value).reduce((a, b) => a + b)

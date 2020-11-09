@@ -10,10 +10,15 @@
         <h3>Top games</h3>
         <div v-for="(game, index) of stats.topGames" :key="index">
           <p>{{ game.name }}</p>
-          <p class="subtitle">{{ game.total }} votes</p>
+          <p class="subtitle">Votes: {{ game.total }}</p>
         </div>
       </div>
-      <div>
+      <div v-if="stats.viewerVote">
+        <h3>Your Vote</h3>
+        <p>{{ stats.viewerVote.game }}</p>
+        <p class="subtitle">Votes: {{ stats.viewerVote.votes }}</p>
+      </div>
+      <div v-else>
         <b-button type="is-primary" @click="emitVoteClicked">Vote For A Game</b-button>
       </div>
     </div>
@@ -60,14 +65,14 @@
   }
 
   .currently-playing {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
   }
 
   .current-round {
     margin-bottom: 20px;
   }
 
-  .current-round h3 {
+  h3 {
     font-size: 20px;
     font-weight: 600;
   }
