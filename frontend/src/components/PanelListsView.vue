@@ -34,7 +34,12 @@
               </b-icon>
             </a>
           </div>
-          <CardContent v-if="voteListOpen === index" :item="item" @gameSelected="emitGameVoteSelected(item)" />
+          <CardContent
+            v-if="voteListOpen === index"
+            :item="item"
+            :isCurrent="currentGame.appid == item.appid"
+            @gameSelected="emitGameVoteSelected(item)"
+          />
         </b-collapse>
       </b-tab-item>
       <b-tab-item label="Completed">
@@ -85,6 +90,10 @@ export default {
     completed: {
       type: Array,
       default: () => []
+    },
+    currentGame: {
+      type: Object,
+      default: () => {}
     }
   },
 

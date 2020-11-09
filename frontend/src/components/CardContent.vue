@@ -13,7 +13,13 @@
           Total Votes: {{ item.totalVotes }}
         </div>
         <div>
-          <b-button type="is-primary" @click="voteClick">Vote For This Game</b-button>
+          <b-button
+            type="is-primary"
+            :disabled="isCurrent"
+            @click="voteClick"
+          >
+            Vote For This Game
+          </b-button>
         </div>
       </div>
     </div>
@@ -30,6 +36,10 @@
       completed: {
         type: Boolean,
         default: false
+      },
+      isCurrent: {
+        type: Boolean,
+        required: true
       }
     },
 

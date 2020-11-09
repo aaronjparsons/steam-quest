@@ -1,18 +1,22 @@
 <template>
-  <div class="container">
+  <div v-if="dataLoading" class="container">
+    Loading
+  </div>
+  <div v-else class="container">
     <transition-group :name="transition">
       <PanelStatsView
         v-if="currentView === 'stats'"
         key="stats"
-        :stats="panelStats"
+        :stats="channelData.stats"
         :config-complete="configComplete"
         @voteClicked="goToListsView"
       />
       <PanelListsView
         v-else-if="currentView === 'vote'"
         key="vote"
-        :library="library"
-        :completed="completed"
+        :library="channelData.library"
+        :completed="channelData.completed"
+        :current-game="channelData.stats.current"
         @backClicked="goToStatsView"
         @gameVoteSelected="goToGameVoteView"
       />
@@ -47,12 +51,13 @@ export default {
       transition: 'slide-prev',
       channelId: null,
       currentView: 'stats',
-      panelStats: {},
+      channelData: {},
       libraryLoading: false,
-      library: [],
-      completed: [],
+      // library: [],
+      // completed: [],
       selectedGame: null,
-      configComplete: true
+      configComplete: true,
+      dataLoading: true
     }
   },
 
@@ -61,7 +66,7 @@ export default {
       console.log('auth: ', auth)
       this.axios = createAxios(auth.token, auth.channelId)
       this.channelId = auth.channelId;
-      await this.getChannel()
+      await this.getChannelData()
     })
 
     window.Twitch.ext.onContext(context => {
@@ -79,7 +84,7 @@ export default {
         this.selectedGame = null
       }
       this.currentView = 'vote'
-      this.getLibrary()
+      // this.getLibrary()
     },
 
     goToStatsView() {
@@ -93,31 +98,32 @@ export default {
       this.currentView = 'gameVote'
     },
 
-    async getChannel() {
+    async getChannelData() {
       try {
         const data = await this.axios.get(`/channels/${this.channelId}/panelstats`)
-        this.panelStats = data.data
+        this.channelData = data.data
       } catch (error) {
         if (error.response.status === 404) {
           this.configComplete = false;
         }
         console.log(error)
       }
+      this.dataLoading = false
     },
 
-    async getLibrary() {
-      this.libraryLoading = true
-      try {
-        const library = await this.axios.get(`/channels/${this.channelId}/library`)
+    // async getLibrary() {
+    //   this.libraryLoading = true
+    //   try {
+    //     const library = await this.axios.get(`/channels/${this.channelId}/library`)
 
-        this.library = library.data.library
-        this.completed = library.data.completed
-        console.log(library.data)
-      } catch (error) {
-        console.log(error)
-      }
-      this.libraryLoading = false
-    },
+    //     this.library = library.data.library
+    //     this.completed = library.data.completed
+    //     console.log(library.data)
+    //   } catch (error) {
+    //     console.log(error)
+    //   }
+    //   this.libraryLoading = false
+    // },
 
     async submitVote(voteData) {
       try {

@@ -7,11 +7,11 @@
         <p>{{ currentGameName }}</p>
       </div>
       <div class="current-round">
-        <h3>Current Voting Round</h3>
-        <p>Top games</p>
-        <p v-for="(game, index) of stats.topGames" :key="index">
-          {{ game.appid }}: {{ game.total }} votes
-        </p>
+        <h3>Top games</h3>
+        <div v-for="(game, index) of stats.topGames" :key="index">
+          <p>{{ game.name }}</p>
+          <p class="subtitle">{{ game.total }} votes</p>
+        </div>
       </div>
       <div>
         <b-button type="is-primary" @click="emitVoteClicked">Vote For A Game</b-button>
@@ -38,8 +38,8 @@
 
     computed: {
       currentGameName() {
-        return this.stats.currentGame && this.stats.currentGame.name
-          ? this.stats.currentGame.name
+        return this.stats.current && this.stats.current.name
+          ? this.stats.current.name
           : 'No Active Game Set'
       }
     },
@@ -76,5 +76,9 @@
     padding: 10px;
     text-align: center;
     font-size: 20px;
+  }
+
+  .subtitle {
+    font-size: 14px;
   }
 </style>
