@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@mdi/font": "^5.3.45",
-    "axios": "^0.19.2",
+    "axios": "^0.21.2",
     "buefy": "^0.8.20",
     "core-js": "^3.6.5",
     "lodash.debounce": "^4.0.8",
