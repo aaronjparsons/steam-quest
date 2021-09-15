@@ -21,6 +21,7 @@
       <div v-else>
         <b-button type="is-primary" @click="emitVoteClicked">Vote For A Game</b-button>
       </div>
+      <b-button class="refresh-btn" type="is-light" size="is-small" @click="emitRefreshClicked">Refresh</b-button>
     </div>
     <div v-else>
       <p>This broadcaster has not completed the configuration for Steam Quest</p>
@@ -51,7 +52,10 @@
 
     methods: {
       emitVoteClicked() {
-        this.$emit('voteClicked')
+        this.$emit('voteClicked');
+      },
+      emitRefreshClicked() {
+        this.$emit('refreshClicked');
       }
     }
   }
@@ -85,5 +89,9 @@
 
   .subtitle {
     font-size: 14px;
+  }
+
+  .refresh-btn {
+    margin-top: 20px;
   }
 </style>

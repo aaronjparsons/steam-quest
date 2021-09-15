@@ -10,6 +10,7 @@
         :stats="channelData.stats"
         :config-complete="configComplete"
         @voteClicked="goToListsView"
+        @refreshClicked="getChannelData"
       />
       <PanelListsView
         v-else-if="currentView === 'vote'"
@@ -24,8 +25,10 @@
         v-else
         key="gameVote"
         :game="selectedGame"
+        :axios="axios"
+        :channelId="channelId"
         @backClicked="goToListsView"
-        @submitVote="submitVote"
+        @voteComplete="goToStatsView"
       />
     </transition-group>
   </div>
@@ -57,7 +60,8 @@ export default {
       // completed: [],
       selectedGame: null,
       configComplete: true,
-      dataLoading: true
+      dataLoading: true,
+      voteLoading: false
     }
   },
 
@@ -99,6 +103,7 @@ export default {
     },
 
     async getChannelData() {
+      this.dataLoading = true;
       try {
         const data = await this.axios.get(`/channels/${this.channelId}/panelstats`)
         this.channelData = data.data
@@ -124,14 +129,6 @@ export default {
     //   }
     //   this.libraryLoading = false
     // },
-
-    async submitVote(voteData) {
-      try {
-        await this.axios.post(`/channels/${this.channelId}/vote`, voteData)
-      } catch (error) {
-        console.log(error)
-      }
-    }
   }
 }
 </script>

@@ -30,7 +30,7 @@
             </p>
             <a class="card-header-icon">
               <b-icon
-                :icon="props.open ? 'menu-down' : 'menu-up'">
+                :icon="props.open ? 'menu-up' : 'menu-down'">
               </b-icon>
             </a>
           </div>
@@ -62,7 +62,7 @@
             </p>
             <a class="card-header-icon">
               <b-icon
-                :icon="props.open ? 'menu-down' : 'menu-up'">
+                :icon="props.open ? 'menu-up' : 'menu-down'">
               </b-icon>
             </a>
           </div>

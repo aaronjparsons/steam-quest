@@ -1,6 +1,7 @@
 .DS_Store
 node_modules
 /dist
+/frontend/public/build
 
 # local env files
 .env
@@ -14,6 +15,7 @@ yarn-debug.log*
 yarn-error.log*
 firebase-debug.log
 firestore-debug.log
+ui-debug.log
 
 # Editor directories and files
 .idea
@@ -23,3 +25,5 @@ firestore-debug.log
 *.njsproj
 *.sln
 *.sw?
+
+Steam Quest.json

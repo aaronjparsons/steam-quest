@@ -39,7 +39,7 @@
       },
       isCurrent: {
         type: Boolean,
-        required: true
+        required: false
       }
     },
 
