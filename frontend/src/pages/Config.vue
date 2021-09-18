@@ -6,6 +6,9 @@
         <b-loading :active="true" :is-full-page="false" />
         Loading
       </div>
+      <div v-else-if="channel.configComplete">
+        <p>CONFIG COMPLETE - EDIT EXISTING</p>
+      </div>
       <div v-else>
         <!-- NEW CHANNEL SETUP -->
         <b-steps
@@ -37,20 +40,20 @@
               <p>All items in your Steam library are included and will be eligible for voting by default. You may choose to mark an item as Ignored or Previously Completed if you do not want it to be eligible for voting.</p>
               <p><b-tag type="is-danger" size="is-medium">Ignored</b-tag> items will not show up in the list and can not be voted on. <b-tooltip :label="ignoredTooltip" dashed multilined>What should be marked as ignored?</b-tooltip></p>
               <p><b-tag type="is-primary" size="is-medium">Previously Completed</b-tag> games will show up in the list, but will be marked as completed and can not be voted on.</p>
-              <b-table :data="library" striped hoverable paginated paginated-simple>
+              <b-table :data="channel.library" striped hoverable paginated paginated-simple>
                 <template slot-scope="props">
                   <b-table-column field="name" label="Game">
                     {{ props.row.name }} <a :href="`https://store.steampowered.com/app/${props.row.appid}`" target="_blank"><b-icon icon="open-in-new" size="is-small"></b-icon></a>
                   </b-table-column>
                   <b-table-column label="Mark as Ignored" centered>
-                    <b-checkbox v-model="local.ignored" type="is-danger" :native-value="props.row.appid"></b-checkbox>
+                    <b-checkbox v-model="props.row.ignored" type="is-danger" :native-value="props.row.appid"></b-checkbox>
                   </b-table-column>
                   <b-table-column label="Mark as Previously Completed" centered>
-                    <b-checkbox v-model="local.previouslyCompleted" type="is-primary" :native-value="props.row.appid"></b-checkbox>
+                    <b-checkbox v-model="props.row.previouslyCompleted" type="is-primary" :native-value="props.row.appid"></b-checkbox>
                   </b-table-column>
                 </template>
               </b-table>
-              <p>After you have gone through your game library and marked all necessary games, you can continue with the rest of the configuration. You always come back later to edit your game library.</p>
+              <p>After you have gone through your game library and marked all necessary games, you can continue with the rest of the configuration. You always come back later to edit your game library after completing the configuration.</p>
             </div>
           </b-step-item>
 
@@ -127,16 +130,15 @@ export default {
       steamId: '',
       local: {
         steamId: '',
-        ignored: [],
-        previouslyCompleted: [],
-        completed: [],
-        votes: {},
         current: {},
         bitsEnabled: false,
-        bitsVoteValue: 20
+        bitsVoteValue: 20,
+        configComplete: false
       },
       currentGameInput: '',
-      channel: {},
+      channel: {
+        library: []
+      },
       newChannel: false,
       channelRequestLoading: false,
       library: [],
@@ -160,8 +162,8 @@ export default {
       return `Example: A viewer can spend ${this.local.bitsVoteValue * 5} bits to have their vote counted 5 times.`
     },
     filteredLibrary() {
-      return this.library.filter(app => {
-        if (this.local.ignored.includes(app.appid) || this.local.previouslyCompleted.includes(app.appid)) {
+      return this.channel.library.filter(app => {
+        if (app.ignored || app.previouslyCompleted) {
           return false
         } else {
           return app.name.toLowerCase().includes(this.currentGameInput.toLowerCase())
@@ -190,27 +192,19 @@ export default {
 
       switch (this.activeStep) {
         case 0:
-          if (this.channel.steamId) {
-            await this.updateChannelData()
-          } else {
-            await this.createChannelData()
-          }
-          await this.getLibrary()
+          await this.createChannelData()
 
-          if (this.library.length) {
+          if (this.channel.library.length) {
             // TODO - Error handling for incorrect steam id or private account
             this.activeStep = 1
           }
           break
         case 1:
           await this.updateChannelData()
-          if (this.local.current && this.local.current.name) {
-            this.currentGameInput = this.local.current.name
-          }
           this.activeStep = 2
           break
         case 2:
-          await this.updateChannelData()
+          await this.completeConfig()
           this.activeStep = 3
           break
         default:
@@ -224,11 +218,10 @@ export default {
       this.channelRequestLoading = true
       try {
         const response = await this.axios.get(`/channels/${id}`)
-        this.channel = response.data
 
-        if (this.channel && this.channel.steamId) {
+        if (response.data && response.data.configComplete) {
+          this.channel = response.data
           this.local = this.channel
-          this.getLibrary()
         } else {
           this.newChannel = true
           this.local = {
@@ -244,9 +237,8 @@ export default {
 
     async createChannelData() {
       try {
-        await this.axios.post('/channels', this.local)
-
-        this.channel = this.local
+        const channel = await this.axios.post('/channels', this.local)
+        this.channel = channel.data
       } catch (error) {
         console.log(error)
       }
@@ -254,9 +246,23 @@ export default {
 
     async updateChannelData() {
       try {
-        await this.axios.patch(`/channels/${this.channel.id}`, this.local)
+        await this.axios.patch(`/channels/${this.channel.id}`, this.channel)
+      } catch (error) {
+        console.log(error)
+      }
+    },
 
-        this.channel = this.local
+    async completeConfig() {
+      try {
+        const data = {
+          configComplete: true,
+        }
+
+        if (this.local.current.appid) {
+          data.current = this.local.current;
+        }
+
+        await this.axios.patch(`/channels/${this.channel.id}`, data)
       } catch (error) {
         console.log(error)
       }

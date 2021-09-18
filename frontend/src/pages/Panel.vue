@@ -59,7 +59,7 @@ export default {
       // library: [],
       // completed: [],
       selectedGame: null,
-      configComplete: true,
+      configComplete: true, // TODO: This should be a boolean from the BE
       dataLoading: true,
       voteLoading: false
     }

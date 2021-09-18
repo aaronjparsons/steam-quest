@@ -17,51 +17,30 @@ module.exports = async (req, res) => {
     }
 
     const data = channel.data()
-    const steamLibrary = await getSteamLibrary(data.steamId)
+    // const steamLibrary = await getSteamLibrary(data.steamId)
     const stats = {
       channelId: data.id,
       current: data.current,
       viewerVote: null,
-      topGames: []
+      topGames: [],
     }
 
     // Stats
-    const voteTotals = []
-
-    for (const [key, value] of Object.entries(data.votes)) {
-      // Get viewerVote
-      if (value[user]) {
-        const game = steamLibrary.find(app => app.appid == key)
-        stats.viewerVote = {
-          game: game.name,
-          votes: value[user]
-        }
-      }
-      // Top games
-      const gameVotes = Object.values(value).reduce((a, b) => a + b)
-      voteTotals.push({
-        appid: key,
-        total: gameVotes
-      })
-    }
-
-    stats.topGames = voteTotals.sort((a, b) => b.total - a.total).slice(0, 3)
-    stats.topGames = stats.topGames.map(game => {
-      const app = steamLibrary.find(app => app.appid == game.appid)
-      return {
-        ...game,
-        name: app.name
-      }
-    })
+    // for (const [key, value] of Object.entries(data.votes)) {
+    //   // Get viewerVote
+    //   if (value[user]) {
+    //     const game = steamLibrary.find(app => app.appid == key)
+    //     stats.viewerVote = {
+    //       game: game.name,
+    //       votes: value[user]
+    //     }
+    //   }
+    // }
 
     // Library
-    const { library, completed } = await buildLibrary(data, steamLibrary);
+    const { library, completed } = await buildLibrary(data);
 
-    res.status(200).json({
-      stats,
-      library,
-      completed
-    })
+    res.status(200).json({ stats, library, completed })
   } catch (error) {
     console.log(error)
     res.status(500).send(error)
