@@ -17,25 +17,24 @@ module.exports = async (req, res) => {
     }
 
     const data = channel.data()
-    // const steamLibrary = await getSteamLibrary(data.steamId)
     const stats = {
       channelId: data.id,
       current: data.current,
+      topGames: data.topGames,
       viewerVote: null,
-      topGames: [],
     }
 
     // Stats
-    // for (const [key, value] of Object.entries(data.votes)) {
-    //   // Get viewerVote
-    //   if (value[user]) {
-    //     const game = steamLibrary.find(app => app.appid == key)
-    //     stats.viewerVote = {
-    //       game: game.name,
-    //       votes: value[user]
-    //     }
-    //   }
-    // }
+    for (const [key, value] of Object.entries(data.votes)) {
+      // Get viewerVote
+      if (value[user]) {
+        const game = data.library.find(app => app.appid == key)
+        stats.viewerVote = {
+          game: game.name,
+          votes: value[user]
+        }
+      }
+    }
 
     // Library
     const { library, completed } = await buildLibrary(data);

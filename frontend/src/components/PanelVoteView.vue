@@ -44,8 +44,8 @@ export default {
       this.$emit('backClicked')
     },
 
-    emitVoteComplete() {
-      this.$emit('voteComplete')
+    emitVoteComplete(data) {
+      this.$emit('voteComplete', data)
     },
 
     async submitVote() {
@@ -55,13 +55,13 @@ export default {
           appid: this.game.appid,
           votes: 1
         }
-        await this.axios.post(`/channels/${this.channelId}/vote`, voteData);
+        const response = await this.axios.post(`/channels/${this.channelId}/vote`, voteData);
         this.$buefy.toast.open({
           message: `Your vote has been cast!`,
           position: 'is-bottom',
           type: 'is-success'
         })
-        this.emitVoteComplete();
+        this.emitVoteComplete(response.data);
       } catch (error) {
         this.$buefy.toast.open({
           message: `${error}`,

@@ -28,7 +28,7 @@
         :axios="axios"
         :channelId="channelId"
         @backClicked="goToListsView"
-        @voteComplete="goToStatsView"
+        @voteComplete="updateAndReturnToStats"
       />
     </transition-group>
   </div>
@@ -56,10 +56,8 @@ export default {
       currentView: 'stats',
       channelData: {},
       libraryLoading: false,
-      // library: [],
-      // completed: [],
       selectedGame: null,
-      configComplete: true, // TODO: This should be a boolean from the BE
+      configComplete: true,
       dataLoading: true,
       voteLoading: false
     }
@@ -102,6 +100,15 @@ export default {
       this.currentView = 'gameVote'
     },
 
+    updateAndReturnToStats({ viewerVote, topGames }) {
+      this.channelData.stats = {
+        ...this.channelData.stats,
+        viewerVote,
+        topGames
+      }
+      this.goToStatsView()
+    },
+
     async getChannelData() {
       this.dataLoading = true;
       try {
@@ -115,20 +122,6 @@ export default {
       }
       this.dataLoading = false
     },
-
-    // async getLibrary() {
-    //   this.libraryLoading = true
-    //   try {
-    //     const library = await this.axios.get(`/channels/${this.channelId}/library`)
-
-    //     this.library = library.data.library
-    //     this.completed = library.data.completed
-    //     console.log(library.data)
-    //   } catch (error) {
-    //     console.log(error)
-    //   }
-    //   this.libraryLoading = false
-    // },
   }
 }
 </script>
