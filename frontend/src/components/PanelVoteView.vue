@@ -30,6 +30,10 @@ export default {
     axios: {
       type: Function,
       required: false
+    },
+    bitsEnabled: {
+      type: Boolean,
+      required: true
     }
   },
 

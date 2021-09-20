@@ -21,6 +21,7 @@ module.exports = async (req, res) => {
       channelId: data.id,
       current: data.current,
       topGames: data.topGames,
+      bitsEnabled: data.bitsEnabled,
       viewerVote: null,
     }
 

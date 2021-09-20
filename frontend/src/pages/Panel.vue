@@ -27,6 +27,7 @@
         :game="selectedGame"
         :axios="axios"
         :channelId="channelId"
+        :bitsEnabled="isBitsEnabled"
         @backClicked="goToListsView"
         @voteComplete="updateAndReturnToStats"
       />
@@ -74,8 +75,12 @@ export default {
     window.Twitch.ext.onContext(context => {
       window.Twitch.ext.rig.log('context: ', context)
     })
+  },
 
-    console.log('Bits Enabled?: ', window.Twitch.ext.features.isBitsEnabled)
+  computed: {
+    isBitsEnabled() {
+      return this.channelData?.stats?.bitsEnabled
+    }
   },
 
   methods: {

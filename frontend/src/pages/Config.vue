@@ -7,7 +7,74 @@
         Loading
       </div>
       <div v-else-if="channel.configComplete">
-        <p>CONFIG COMPLETE - EDIT EXISTING</p>
+        <!-- CONFIG EDIT START -->
+         <b-tabs v-model="activeTab">
+          <b-tab-item label="Current Game">
+            <div class="section">
+              <h2 class="title is-4">{{ this.channel.current.name }}</h2>
+              <p>Change the current game:</p>
+              <b-field grouped>
+                <b-autocomplete
+                  v-model="currentGameInput"
+                  placeholder="Search for a game..."
+                  :data="filteredLibrary"
+                  field="name"
+                  expanded
+                  @select="setLocalCurrent">
+                </b-autocomplete>
+                <p class="control">
+                  <b-button
+                    class="button is-primary"
+                    :loading="updateCurrentLoading"
+                    @click="updateCurrentGame"
+                  >
+                    Save
+                  </b-button>
+                </p>
+              </b-field>
+            </div>
+            <div class="section">
+              <h2 class="title is-4">Mark As Complete</h2>
+              <div v-if="currentGameFull && currentGameFull.completed">
+                <p>Mark {{ currentGameFull.name }} was completed on {{ currentGameFull.completed }}</p>
+              </div>
+              <div v-else>
+                <p>Mark {{ this.channel.current.name }} as complete</p>
+                <b-button
+                  class="button is-primary"
+                  :loading="updateCurrentLoading"
+                  @click="completeCurrentGame"
+                >
+                  Mark as Complete
+                </b-button>
+              </div>
+            </div>
+          </b-tab-item>
+          <b-tab-item label="Library">
+            <b-table :data="libraryArray" striped hoverable paginated paginated-simple>
+              <template slot-scope="props">
+                <b-table-column field="name" label="Game">
+                  {{ props.row.name }} <a :href="`https://store.steampowered.com/app/${props.row.appid}`" target="_blank"><b-icon icon="open-in-new" size="is-small"></b-icon></a>
+                </b-table-column>
+                <b-table-column label="Ignored" centered>
+                  <b-checkbox v-model="props.row.ignored" :disabled="Boolean(props.row.completed)" type="is-danger" :native-value="props.row.appid"></b-checkbox>
+                </b-table-column>
+                <b-table-column label="Previously Completed" centered>
+                  <b-checkbox v-model="props.row.previouslyCompleted" :disabled="Boolean(props.row.completed)" type="is-primary" :native-value="props.row.appid"></b-checkbox>
+                </b-table-column>
+                <b-table-column label="Completed" centered>
+                  <div v-if="props.row.completed">
+                    {{ props.row.completed }}
+                  </div>
+                </b-table-column>
+              </template>
+            </b-table>
+          </b-tab-item>
+          <b-tab-item label="Bits Settings">
+            Lorem ipsum dolor sit amet.
+          </b-tab-item>
+        </b-tabs>
+        <!-- CONFIG EDIT END -->
       </div>
       <div v-else>
         <!-- NEW CHANNEL SETUP -->
@@ -24,7 +91,7 @@
                   and how much you want to customize the list of games to be voted on.
                 </p>
                 <p>
-                  To begin configuring Steam Quest, enter your 17 digit Steam ID number. Your Steam account must not be private,
+                  To begin configuring Steam Quest, enter your 17 digit Steam ID number (steamID64). Your Steam account must not be private,
                   otherwise your game library will not be accessible.
                   <a href="https://www.google.com/search?q=how+to+find+my+steam+id" target="_blank">Not sure where to find your Steam ID number?</a>
                 </p>
@@ -40,7 +107,7 @@
               <p>All items in your Steam library are included and will be eligible for voting by default. You may choose to mark an item as Ignored or Previously Completed if you do not want it to be eligible for voting.</p>
               <p><b-tag type="is-danger" size="is-medium">Ignored</b-tag> items will not show up in the list and can not be voted on. <b-tooltip :label="ignoredTooltip" dashed multilined>What should be marked as ignored?</b-tooltip></p>
               <p><b-tag type="is-primary" size="is-medium">Previously Completed</b-tag> games will show up in the list, but will be marked as completed and can not be voted on.</p>
-              <b-table :data="channel.library" striped hoverable paginated paginated-simple>
+              <b-table :data="libraryArray" striped hoverable paginated paginated-simple>
                 <template slot-scope="props">
                   <b-table-column field="name" label="Game">
                     {{ props.row.name }} <a :href="`https://store.steampowered.com/app/${props.row.appid}`" target="_blank"><b-icon icon="open-in-new" size="is-small"></b-icon></a>
@@ -61,10 +128,10 @@
             <div class="section">
               <h2 class="title is-4">Setup Bits</h2>
               <h4 class="subtitle is-6">(Optional)</h4>
-              <b-field :message="bitsEnableMessage" :type="channelBitsEnabled ? '' : 'is-danger'">
-                <b-checkbox v-model="local.bitsEnabled" :disabled="!channelBitsEnabled">Enable bits for Steam Quest?</b-checkbox>
+              <b-field :message="bitsEnableMessage" :type="channelFeatures.isBitsEnabled ? '' : 'is-danger'">
+                <b-checkbox v-model="local.bitsEnabled" :disabled="!channelFeatures.isBitsEnabled">Enable bits for Steam Quest?</b-checkbox>
               </b-field>
-              <b-field v-if="local.bitsEnabled" label="Bit amount per vote" :message="bitsVoteValueMessage">
+              <b-field v-if="local.bitsEnabled" label="Bits amount per vote" :message="bitsVoteValueMessage">
                 <b-numberinput v-model="local.bitsVoteValue" class="max-width-input" min="1"></b-numberinput>
               </b-field>
             </div>
@@ -139,36 +206,45 @@ export default {
       channel: {
         library: []
       },
-      newChannel: false,
       channelRequestLoading: false,
       library: [],
       libraryLoading: false,
       ignoredTooltip: 'Software, videos/movies, and anything else you do not want to show up in your library list.',
       firstGameMessage: 'Already know the first game you\'ll be playing? Set it here!',
-      nextStepLoading: false
+      nextStepLoading: false,
+      activeTab: 0,
+      updateCurrentLoading: false
     }
   },
 
   computed: {
-    channelBitsEnabled() {
-      return window.Twitch.ext.features.isBitsEnabled
+    channelFeatures() {
+      return window.Twitch.ext.features
     },
     bitsEnableMessage() {
-      return this.channelBitsEnabled
+      return this.channelFeatures.isBitsEnabled
         ? 'Enabling bits on this extension will allow viewers to use bits to increase their vote count.'
         : 'Your channel does not allow bits to be enabled.'
     },
     bitsVoteValueMessage() {
       return `Example: A viewer can spend ${this.local.bitsVoteValue * 5} bits to have their vote counted 5 times.`
     },
+    libraryArray() {
+      return Object.values(this.channel.library).sort((a, b) => {
+        return a.name.localeCompare(b.name)
+      })
+    },
     filteredLibrary() {
-      return this.channel.library.filter(app => {
+      return this.libraryArray.filter(app => {
         if (app.ignored || app.previouslyCompleted) {
           return false
         } else {
           return app.name.toLowerCase().includes(this.currentGameInput.toLowerCase())
         }
       })
+    },
+    currentGameFull() {
+      return this.channel.library[this.channel.current.appid]
     }
   },
 
@@ -183,7 +259,7 @@ export default {
       window.Twitch.ext.rig.log('context: ', context)
     })
 
-    console.log('Bits Enabled?: ', window.Twitch.ext.features.isBitsEnabled)
+    console.log('Features: ', this.channelFeatures)
   },
 
   methods: {
@@ -194,7 +270,7 @@ export default {
         case 0:
           await this.createChannelData()
 
-          if (this.channel.library.length) {
+          if (this.libraryArray.length) {
             // TODO - Error handling for incorrect steam id or private account
             this.activeStep = 1
           }
@@ -205,7 +281,6 @@ export default {
           break
         case 2:
           await this.completeConfig()
-          this.activeStep = 3
           break
         default:
           break
@@ -220,10 +295,9 @@ export default {
         const response = await this.axios.get(`/channels/${id}`)
 
         if (response.data && response.data.configComplete) {
-          this.channel = response.data
-          this.local = this.channel
+          this.setData(response.data)
+          this.currentGameInput = this.channel.current.name
         } else {
-          this.newChannel = true
           this.local = {
             id,
             ...this.local
@@ -237,8 +311,8 @@ export default {
 
     async createChannelData() {
       try {
-        const channel = await this.axios.post('/channels', this.local)
-        this.channel = channel.data
+        const response = await this.axios.post('/channels', this.local)
+        this.setData(response.data)
       } catch (error) {
         console.log(error)
       }
@@ -252,6 +326,19 @@ export default {
       }
     },
 
+    async updateCurrentGame() {
+      this.updateCurrentLoading = true
+      try {
+        const response = await this.axios.patch(`/channels/${this.channel.id}`, {
+          current: this.local.current
+        })
+        this.setData(response.data)
+      } catch (error) {
+        console.log(error)
+      }
+      this.updateCurrentLoading = false
+    },
+
     async completeConfig() {
       try {
         const data = {
@@ -263,22 +350,38 @@ export default {
         }
 
         await this.axios.patch(`/channels/${this.channel.id}`, data)
+        this.activeStep = 3
+        setTimeout(() => {
+          this.channel.configComplete = true
+        }, 5000)
       } catch (error) {
         console.log(error)
       }
     },
 
-    async getLibrary() {
-      this.libraryLoading = true
-      try {
-        const library = await this.axios.get(`/channels/${this.channel.id}/steamlibrary`)
+    setLocalCurrent(option) {
+      if (option && option.appid) {
+        this.local.current = { appid: option.appid, name: option.name }
+      }
+    },
 
-        this.library = library.data
-        console.log(this.library)
+    setData(data) {
+      this.channel = data
+      this.local = Object.assign({}, data)
+    },
+
+    async completeCurrentGame() {
+      const timestamp = new Date().getTime()
+      const appid = this.channel.current.appid
+      const key = `library.${appid}.completed`
+      const data = {}
+      data[key] = timestamp
+      try {
+        const response = await this.axios.patch(`/channels/${this.channel.id}`, data)
+        this.setData(response.data)
       } catch (error) {
         console.log(error)
       }
-      this.libraryLoading = false
     }
   }
 }

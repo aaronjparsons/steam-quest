@@ -7,8 +7,8 @@ module.exports = async (req, res) => {
 
     const steamLibrary = await getSteamLibrary(steamId)
     // TODO: Invalid Steam ID??
-    const library = steamLibrary.map(game => {
-      return {
+    const library = steamLibrary.reduce((acc, game) => {
+      acc[game.appid] = {
         appid: game.appid,
         name: game.name,
         img_logo_url: game.img_logo_url,
@@ -16,7 +16,8 @@ module.exports = async (req, res) => {
         ignored: false,
         previouslyCompleted: false
       }
-    })
+      return acc
+    }, {})
     const data = {
       ...req.body,
       votes: {},

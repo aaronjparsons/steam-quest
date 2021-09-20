@@ -16,14 +16,6 @@ module.exports = async (channelData) => {
       return false
     }
 
-    // TODO: Temp disabled
-    // if (channelData.votes[item.appid]) {
-    //   item.totalVotes = Object.values(channelData.votes[item.appid]).reduce((a, b) => {
-    //     return a + b
-    //   }, 0)
-    // } else {
-    //   item.totalVotes = 0
-    // }
     return true
   })
 

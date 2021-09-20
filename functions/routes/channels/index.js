@@ -6,6 +6,7 @@ const getRawLibrary = require('./getRawLibrary')
 const getPanelStats = require('./getPanelStats')
 const getLibrary = require('./getLibrary')
 const submitVote = require('./submitVote')
+const markAsComplete = require('./markAsComplete')
 
 channels.post('/', createChannel)
 channels.get('/:channelId', getChannel)
@@ -14,5 +15,6 @@ channels.get('/:channelId/steamlibrary', getRawLibrary)
 channels.get('/:channelId/library', getLibrary) // TODO: deprecated
 channels.get('/:channelId/panelstats', getPanelStats) // All Panel Data
 channels.post('/:channelId/vote', submitVote)
+channels.post('/:channelId/complete', markAsComplete)
 
 module.exports = channels

@@ -22,9 +22,10 @@ module.exports = async (steamId, appFilters = null) => {
     }`,
     { params }
   )
-  const sorted = response.data.response.games.sort((a, b) => {
-    return a.name.localeCompare(b.name)
-  })
+  // const sorted = response.data.response.games.sort((a, b) => {
+  //   return a.name.localeCompare(b.name)
+  // })
 
-  return sorted
+  // return sorted
+  return response.data.response.games
 }
